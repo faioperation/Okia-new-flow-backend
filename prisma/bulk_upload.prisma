@@ -1,0 +1,30 @@
+model BulkUploadBatch {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  totalFiles     Int       @default(0) @map("total_files")
+  completedFiles Int       @default(0) @map("completed_files")
+  failedFiles    Int       @default(0) @map("failed_files")
+  duplicateFiles Int       @default(0) @map("duplicate_files")
+  pendingFiles   Int       @default(0) @map("pending_files")
+  status         String    @default("pending") @db.VarChar(30)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  completedAt    DateTime? @map("completed_at")
+
+  candidates Candidate[]
+  failLogs   BulkUploadFailLog[]
+
+  @@map("bulk_upload_batches")
+}
+
+model BulkUploadFailLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  batchId    String   @map("batch_id") @db.Uuid
+  fileName   String   @map("file_name") @db.VarChar(255)
+  filePath   String?  @map("file_path")
+  reason     String
+  errorStack String?  @map("error_stack")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  batch BulkUploadBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@map("bulk_upload_fail_logs")
+}

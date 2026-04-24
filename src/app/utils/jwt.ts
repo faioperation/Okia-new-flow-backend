@@ -4,7 +4,6 @@ export type TJwtPayload = {
   id: string;
   email: string;
   name: string;
-  role: string;
 };
 
 export const generateToken = (

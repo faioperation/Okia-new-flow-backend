@@ -1,0 +1,37 @@
+model Candidate {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  uploadTime DateTime @default(now()) @map("upload_time")
+
+  candidateName String  @map("candidate_name") @db.VarChar(255)
+  surname       String? @map("surname") @db.VarChar(255)
+  emailAddress  String? @map("email_address") @db.VarChar(255)
+  contactNumber String? @map("contact_number") @db.VarChar(50)
+
+  jobTitle String? @map("job_title") @db.VarChar(255)
+  address  String?
+
+  availabilityStatus String @default("available") @map("availability_status") @db.VarChar(30)
+  qualityStatus      String @default("pending") @map("quality_status") @db.VarChar(30)
+
+  experienceYears Decimal? @map("experience_years") @db.Decimal(4, 1)
+
+  professionalProfile String? @map("professional_profile")
+  interests           String?
+
+  rawExtractedText  String? @map("raw_extracted_text")
+  profilePictureUrl String? @map("profile_picture_url") @db.VarChar(255)
+
+  batchId String?          @map("batch_id") @db.Uuid
+  batch   BulkUploadBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
+
+  educations          CandidateEducation[]
+  employmentHistories CandidateEmploymentHistory[]
+  cvFiles             CandidateCvFile[]
+  skills              CandidateSkill[]
+
+  @@map("candidates")
+}

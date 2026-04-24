@@ -1,0 +1,13 @@
+model CandidateCvFile {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId   String   @db.Uuid
+  fileType      String   @db.VarChar(30)
+  fileUrl       String
+  versionNo     Int      @default(1)
+  generatedByAi Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("candidate_cv_files")
+}

@@ -1,0 +1,19 @@
+model CandidateEducation {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId String @db.Uuid
+
+  degreeName      String? @db.VarChar(255)
+  institutionName String? @db.VarChar(255)
+
+  startYear Int?
+  endYear   Int?
+
+  grade       String? @db.VarChar(100)
+  description String?
+
+  createdAt DateTime @default(now())
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("candidate_educations")
+}

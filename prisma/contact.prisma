@@ -1,0 +1,25 @@
+model Contact {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organizationId String       @map("organization_id") @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  fullName String @map("full_name") @db.VarChar(255)
+
+  email String? @db.VarChar(255)
+  phone String? @db.VarChar(50)
+
+  jobTitle String? @map("job_title") @db.VarChar(255)
+
+  department String? @db.VarChar(150)
+
+  gender String? @db.VarChar(50)
+
+  @@index([organizationId])
+  @@index([fullName])
+  @@index([email])
+  @@map("contacts")
+}

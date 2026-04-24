@@ -5,7 +5,7 @@ import httpStatus from "http-status"
 import { verifyToken } from "../utils/jwt";
 import config from "../config";
 
-const auth = (...roles: string[]) => {
+const auth = () => {
     return async (req: Request & { user?: any }, res: Response, next: NextFunction) => {
         try {
             const token = req.cookies.accessToken;
@@ -17,10 +17,6 @@ const auth = (...roles: string[]) => {
             const verifyUser = verifyToken(token, config.JWT_ACCESS_TOKEN as string);
 
             req.user = verifyUser;
-
-            if (roles.length && !roles.includes(verifyUser.role)) {
-                throw new ApiError(httpStatus.UNAUTHORIZED, "You are not authorized!")
-            }
 
             next();
         }

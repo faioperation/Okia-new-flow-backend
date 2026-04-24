@@ -1,0 +1,20 @@
+model CandidateEmploymentHistory {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId String @db.Uuid
+
+  companyName String? @db.VarChar(255)
+  jobTitle    String? @db.VarChar(255)
+
+  startDate DateTime? @db.Date
+  endDate   DateTime? @db.Date
+
+  isCurrent Boolean @default(false)
+
+  responsibilities String?
+
+  createdAt DateTime @default(now())
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("candidate_employment_histories")
+}

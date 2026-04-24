@@ -1,0 +1,632 @@
+{
+  "info": {
+    "name": "Edukai Backend API",
+    "_postman_id": "8f1a4d21-b2c4-46ea-9f3b-001122334455",
+    "description": "Postman Collection for Edukai Backend Authentication and API Settings",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000/api"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Kishor Mahmud\",\n  \"email\": \"kishor@gmail.com\",\n  \"password\": \"123456\",\n  \"contactNo\": \"01700000000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"kishor@gmail.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Logout User",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"kishor@gmail.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"kishor@gmail.com\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/verify-otp",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "verify-otp"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"kishor@gmail.com\",\n  \"newPassword\": \"newStrongPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/change-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "change-password"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Candidates",
+      "item": [
+        {
+          "name": "Create Candidate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"candidateName\": \"John Doe\",\n  \"emailAddress\": \"john@example.com\",\n  \"contactNumber\": \"+1234567890\",\n  \"jobTitle\": \"Software Engineer\",\n  \"address\": \"123 Tech Lane, Silicon Valley\",\n  \"experienceYears\": 5.5,\n  \"professionalProfile\": \"Experienced dev with expertise in Node.js and React.\",\n  \"availabilityStatus\": \"available\",\n  \"qualityStatus\": \"verified\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/candidates/create-candidate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidates",
+                "create-candidate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Candidates",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/candidates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidates"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Candidate",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/candidates/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidates",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Candidate",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobTitle\": \"Senior Software Engineer\",\n  \"experienceYears\": 6.0\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/candidates/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidates",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Candidate",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/candidates/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidates",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Organizations",
+      "item": [
+        {
+          "name": "Create Organization",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Edukai Tech Ltd\",\n  \"urn\": \"URN-12345\",\n  \"phase\": \"Growth\",\n  \"localAuthority\": \"Silicon Valley Authority\",\n  \"town\": \"Palo Alto\",\n  \"postcode\": \"94301\",\n  \"email\": \"contact@edukai.com\",\n  \"website\": \"https://edukai.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/organizations/create-organization",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organizations",
+                "create-organization"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Organizations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/organizations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organizations"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Organization",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/organizations/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organizations",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Organization",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phase\": \"Established\",\n  \"notes\": \"Updated organization details.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/organizations/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organizations",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Organization",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/organizations/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organizations",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contacts",
+      "item": [
+        {
+          "name": "Create Contact",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organizationId\": \"PASTE_ORG_ID_HERE\",\n  \"fullName\": \"Jane Smith\",\n  \"email\": \"jane.smith@edukai.com\",\n  \"phone\": \"+1987654321\",\n  \"jobTitle\": \"HR Manager\",\n  \"department\": \"Human Resources\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/contacts/create-contact",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                "create-contact"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Contacts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/contacts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Contact",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/contacts/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Contact",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobTitle\": \"Director of HR\",\n  \"phone\": \"+1112223334\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/contacts/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Contact",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/contacts/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/users/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "profile"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Change Password (Authenticated)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"123456\",\n  \"newPassword\": \"newSecurePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/change-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "change-password"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bulk Import",
+      "item": [
+        {
+          "name": "Bulk CV Upload",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text"
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/bulk-import/cv",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bulk-import",
+                "cv"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

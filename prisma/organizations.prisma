@@ -1,0 +1,35 @@
+model Organization {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name String  @db.VarChar(255)
+  urn  String? @db.VarChar(100)
+
+  phase          String? @db.VarChar(100)
+  localAuthority String? @map("local_authority") @db.VarChar(255)
+
+  town      String? @db.VarChar(150)
+  postcode  String? @db.VarChar(30)
+  address   String?
+  country   String? @db.VarChar(255)
+  street    String? @db.VarChar(255)
+  latitude  String?
+  longitude String?
+
+  phone   String? @db.VarChar(50)
+  email   String? @db.VarChar(255)
+  website String? @db.VarChar(255)
+
+  gender String? @db.VarChar(50)
+
+  notes String?
+
+  contacts Contact[]
+
+  @@index([name])
+  @@index([town])
+  @@index([localAuthority])
+  @@map("organizations")
+}

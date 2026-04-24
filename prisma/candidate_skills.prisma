@@ -1,0 +1,12 @@
+model CandidateSkill {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId String @db.Uuid
+
+  skillName String @db.VarChar(100)
+
+  createdAt DateTime @default(now())
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("candidate_skills")
+}

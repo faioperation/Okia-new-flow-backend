@@ -33,7 +33,6 @@ const registerUser = async (payload: {
   email: string;
   password: string;
   contactNo: string;
-  role?: string;
 }) => {
   const result = await prisma.$transaction(async (tx) => {
     const existingUser = await tx.user.findUnique({
@@ -52,7 +51,6 @@ const registerUser = async (payload: {
         email: payload.email,
         password: hashed,
         contactNo: payload.contactNo,
-        role: payload.role || "USER",
         isBlocked: false,
       },
     });
