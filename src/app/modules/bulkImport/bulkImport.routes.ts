@@ -17,5 +17,7 @@ router.post(
 router.get("/batches", auth(), bulkImportControllers.getBatches);
 router.get("/batch/:id", auth(), bulkImportControllers.getBatchById);
 router.get("/batch/:id/failures", auth(), bulkImportControllers.getBatchFailures);
+router.get("/all-candidates", auth(), bulkImportControllers.getAllCandidates);
+router.get("/candidate/:id", auth(), bulkImportControllers.getCandidateById);
 
 export const bulkImportRoutes = router;

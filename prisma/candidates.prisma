@@ -23,6 +23,7 @@ model Candidate {
   interests           String?
 
   rawExtractedText  String? @map("raw_extracted_text")
+  extractedJson     Json?   @map("extracted_json")
   profilePictureUrl String? @map("profile_picture_url") @db.VarChar(255)
 
   batchId String?          @map("batch_id") @db.Uuid

@@ -4,6 +4,8 @@ import { bulkImportServices } from "./bulkImport.service";
 import httpStatus from "http-status";
 import ApiError from "../../errors/ApiError";
 import { prisma } from "../../db_connection";
+import { extractTextFromPdf } from "../../utils/bulk-import-utils/pdfExtractor";
+import { parseCandidateData } from "../../utils/bulk-import-utils/candidateParser";
 
 const uploadCvs = catchAsync(async (req, res) => {
   const files = req.files as Express.Multer.File[];
@@ -16,20 +18,25 @@ const uploadCvs = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "Maximum 100 CV files can be uploaded at once.");
   }
 
-  const criteria = {
-    minimumYearsExperience: Number(req.body.minimumYearsExperience) || 0,
-    requiredSkills: req.body.requiredSkills ? JSON.parse(req.body.requiredSkills) : [],
-    jobRole: req.body.jobRole || "",
-    checkFormatting: req.body.checkFormatting === 'true'
-  };
+  const batchId = await bulkImportServices.startBulkImport(files);
 
-  const batchId = await bulkImportServices.startBulkImport(files, criteria);
+  // For immediate feedback in POST response, extract first file's text
+  let firstFilePreview = null;
+  try {
+    const text = await extractTextFromPdf(files[0].path);
+    firstFilePreview = await parseCandidateData(text);
+  } catch (error) {
+    console.error("Preview extraction failed:", error);
+  }
 
   sendResponse(res, {
     statusCode: httpStatus.ACCEPTED,
     success: true,
     message: `${files.length} CV files uploaded and processing started.`,
-    data: { batchId },
+    data: { 
+      batchId,
+      preview: firstFilePreview 
+    },
   });
 });
 
@@ -54,6 +61,12 @@ const getBatchById = catchAsync(async (req, res) => {
     include: {
       _count: {
         select: { failLogs: true, candidates: true }
+      },
+      candidates: {
+        include: {
+          cvFiles: true,
+          skills: true
+        }
       }
     }
   });
@@ -85,9 +98,54 @@ const getBatchFailures = catchAsync(async (req, res) => {
   });
 });
 
+const getAllCandidates = catchAsync(async (req, res) => {
+  const result = await prisma.candidate.findMany({
+    include: {
+      cvFiles: true,
+      skills: true,
+      educations: true,
+      employmentHistories: true
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "All candidates fetched successfully",
+    data: result,
+  });
+});
+
+const getCandidateById = catchAsync(async (req, res) => {
+  const id = req.params.id as string;
+  const result = await prisma.candidate.findUnique({
+    where: { id },
+    include: {
+      cvFiles: true,
+      skills: true,
+      educations: true,
+      employmentHistories: true
+    }
+  });
+
+  if (!result) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Candidate not found");
+  }
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Candidate fetched successfully",
+    data: result,
+  });
+});
+
 export const bulkImportControllers = {
   uploadCvs,
   getBatches,
   getBatchById,
-  getBatchFailures
+  getBatchFailures,
+  getAllCandidates,
+  getCandidateById
 };
