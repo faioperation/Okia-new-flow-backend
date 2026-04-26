@@ -101,9 +101,15 @@ export const parseCandidateData = async (text: string): Promise<IParsedCandidate
     for (const match of dateMatches) {
       const start = parseInt(match[1]);
       const end = match[2].toLowerCase() === 'present' ? new Date().getFullYear() : parseInt(match[2]);
-      if (start < minYear) minYear = start;
-      if (end > maxYear) maxYear = end;
+      
+      // Only consider reasonable years
+      if (start > 1970 && start <= new Date().getFullYear() && 
+          (end === new Date().getFullYear() || (end > 1970 && end <= new Date().getFullYear() + 10))) {
+        if (start < minYear) minYear = start;
+        if (end > maxYear) maxYear = end;
+      }
     }
+
     if (maxYear > 0) {
       expYears = maxYear - minYear;
     }

@@ -9,4 +9,8 @@ model User {
   isBlocked Boolean   @default(true)
   otp       String?
   otpExpiry DateTime?
+
+  importedOrganizations ImportedOrganization[]
 }
+
+

@@ -1,0 +1,18 @@
+model QualityCheck {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId  String    @unique @map("candidate_id") @db.Uuid
+
+  score        Float     @default(0)
+  qualityPass  Boolean   @default(false) @map("quality_pass")
+  fullResponse Json?     @map("full_response")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  candidate Candidate       @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("quality_checks")
+}
+
+

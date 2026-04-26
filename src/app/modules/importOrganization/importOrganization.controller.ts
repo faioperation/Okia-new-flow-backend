@@ -1,0 +1,55 @@
+import { Request, Response } from "express";
+import { catchAsync } from "../../utils/catchAsync";
+import { sendResponse } from "../../utils/sendResponse";
+import httpStatus from "http-status";
+import { importOrganizationServices } from "./importOrganization.service";
+import ApiError from "../../errors/ApiError";
+
+const uploadExcelFiles = catchAsync(async (req: Request, res: Response) => {
+  const files = req.files as Express.Multer.File[];
+  const user = (req as any).user;
+
+  if (!files || files.length === 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "No files uploaded.");
+  }
+
+  const results = await importOrganizationServices.processExcelFiles(files, user.id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `${files.length} Excel files processed. Individual items saved with unique IDs.`,
+    data: results,
+  });
+});
+
+const getAllImports = catchAsync(async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  const result = await importOrganizationServices.getAllImports(user.id);
+  
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "All imported items fetched successfully",
+    data: result,
+  });
+});
+
+const deleteImport = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const user = (req as any).user;
+  const result = await importOrganizationServices.deleteImport(id, user.id);
+  
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Item deleted successfully",
+    data: result,
+  });
+});
+
+export const importOrganizationControllers = {
+  uploadExcelFiles,
+  getAllImports,
+  deleteImport,
+};

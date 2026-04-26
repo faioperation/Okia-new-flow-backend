@@ -3,6 +3,8 @@ import { extractTextFromPdf } from "../../utils/bulk-import-utils/pdfExtractor";
 import { parseCandidateData } from "../../utils/bulk-import-utils/candidateParser";
 import { cvProcessingQueue } from "./bulkImport.queue";
 import fs from 'fs/promises';
+import config from "../../config";
+import { qualityCheckServices } from "../qualityCheck/qualityCheck.service";
 
 const processSingleCv = async (
   file: Express.Multer.File, 
@@ -17,7 +19,6 @@ const processSingleCv = async (
 
     // 2. Parse Data
     const parsedData = await parseCandidateData(text);
-    console.log(`[Batch ${batchId}] Extracted JSON for ${file.originalname}:`, JSON.stringify(parsedData, null, 2));
 
     // 3. Duplicate Detection
     const email = parsedData.contact?.email;
@@ -52,7 +53,7 @@ const processSingleCv = async (
       return;
     }
 
-    // 3. Database Transaction
+    // 4. Database Transaction
     await prisma.$transaction(async (tx) => {
       await tx.candidate.create({
         data: {
@@ -61,7 +62,7 @@ const processSingleCv = async (
           contactNumber: parsedData.contact?.phone,
           jobTitle: parsedData.employment_history?.[0]?.job_title || "",
           address: parsedData.contact?.location,
-          experienceYears: parsedData.total_years_experience,
+          experienceYears: Math.min(parsedData.total_years_experience || 0, 100),
           professionalProfile: parsedData.professional_summary,
           rawExtractedText: text,
           extractedJson: parsedData as any,
@@ -82,14 +83,13 @@ const processSingleCv = async (
             create: parsedData.employment_history?.map(emp => ({
               companyName: emp.company,
               jobTitle: emp.job_title,
-              startDate: undefined,
-              endDate: undefined,
               responsibilities: emp.responsibilities?.join('\n')
             }))
           },
           cvFiles: {
             create: {
-              fileUrl: file.path,
+              fileUrl: `${config.BACKEND_URL}/${file.path.replace(/\\/g, '/')}`,
+              filePath: file.path.replace(/\\/g, '/'),
               fileType: 'old_cv',
               versionNo: 1,
               generatedByAi: false
@@ -98,9 +98,8 @@ const processSingleCv = async (
         }
       });
     });
-    console.log(`[Batch ${batchId}] Candidate ${parsedData.candidate_name} saved to database.`);
 
-    // 6. Update Batch Progress
+    // 5. Update Batch Progress
     await prisma.bulkUploadBatch.update({
       where: { id: batchId },
       data: { 
@@ -111,12 +110,11 @@ const processSingleCv = async (
 
   } catch (error: any) {
     if (retryCount < maxRetries) {
-      console.log(`Retrying CV: ${file.originalname} (Attempt ${retryCount + 1})`);
       cvProcessingQueue.add(() => processSingleCv(file, batchId, retryCount + 1));
       return;
     }
 
-    console.error(`Failed to process CV after ${maxRetries} retries: ${file.originalname}`, error);
+    console.error(`[Error] CV Processing Failed: ${file.originalname}`, error.message);
     
     // Log failure and update batch
     await prisma.bulkUploadBatch.update({
@@ -137,14 +135,12 @@ const processSingleCv = async (
       }
     });
 
-    // Cleanup orphan file if processing totally failed
     try {
       await fs.unlink(file.path);
     } catch (e) {
       console.error("Cleanup failed for", file.path);
     }
   } finally {
-    // Check if batch is completed
     const updatedBatch = await prisma.bulkUploadBatch.findUnique({
       where: { id: batchId }
     });
@@ -157,12 +153,20 @@ const processSingleCv = async (
           completedAt: new Date()
         }
       });
+      console.log(`[Batch ${batchId}] CV EXTRACTION FINISHED. Results:- Passed: ${updatedBatch.completedFiles}, Failed: ${updatedBatch.failedFiles}, Duplicates: ${updatedBatch.duplicateFiles}`);
+      
+      // Trigger AI Quality Check after extraction is fully complete with a 30s initial delay
+      console.log(`[Batch ${batchId}] Waiting 30 seconds before starting AI Quality Check...`);
+      setTimeout(() => {
+        qualityCheckServices.runQualityCheckWithRetry(batchId);
+      }, 30 * 1000);
     }
   }
 };
 
+
+
 const startBulkImport = async (files: Express.Multer.File[]) => {
-  // Create Batch record
   const batch = await prisma.bulkUploadBatch.create({
     data: {
       totalFiles: files.length,
@@ -171,12 +175,15 @@ const startBulkImport = async (files: Express.Multer.File[]) => {
     }
   });
 
+  console.log(`[Batch ${batch.id}] Start processing to convert into JSON... (${files.length} files)`);
+
   files.forEach(file => {
     cvProcessingQueue.add(() => processSingleCv(file, batch.id));
   });
 
   return batch.id;
 };
+
 
 export const bulkImportServices = {
   startBulkImport,

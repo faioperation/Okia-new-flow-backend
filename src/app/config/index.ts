@@ -17,4 +17,10 @@ export default {
   EMAIL_FROM: process.env.EMAIL_FROM,
   EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
   FRONTEND_URL: process.env.FRONTEND_URL,
+  BACKEND_HEADER_KEY: process.env.BACKEND_HEADER_KEY,
+  BACKEND_URL: process.env.BACKEND_URL,
+  AI_API_URL: process.env.AI_API_URL,
+  AI_HEADER_KEY: process.env.AI_HEADER_KEY || 'ai_backend_task',
 };
+
+

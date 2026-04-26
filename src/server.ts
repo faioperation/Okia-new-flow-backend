@@ -7,6 +7,9 @@ let server: Server;
 
 const PORT = config.PORT || 5000;
 
+import { cronJobs } from "./app/cron/qualityCheckSync";
+
+
 const startServer = async () => {
   try {
     console.log(`Environment: ${config.NODE_ENV}`);
@@ -16,7 +19,13 @@ const startServer = async () => {
 http://localhost:5000/
         `);
     });
+
+    // Initialize Cron Jobs
+    cronJobs.setupQualityCheckSync();
+
   } catch (error) {
+
+
     console.error("❌ Failed to start server:", error);
     process.exit(1);
   }
