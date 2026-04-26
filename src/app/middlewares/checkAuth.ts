@@ -5,7 +5,7 @@ import httpStatus from "http-status"
 import { verifyToken } from "../utils/jwt";
 import config from "../config";
 
-const auth = () => {
+const auth = (...roles: string[]) => {
     return async (req: Request & { user?: any }, res: Response, next: NextFunction) => {
         try {
             const token = req.cookies.accessToken;
@@ -17,6 +17,14 @@ const auth = () => {
             const verifyUser = verifyToken(token, config.JWT_ACCESS_TOKEN as string);
 
             req.user = verifyUser;
+
+            if (verifyUser.isBlocked) {
+                throw new ApiError(httpStatus.UNAUTHORIZED, "Your account has been blocked!")
+            }
+
+            if (roles.length && !roles.includes(verifyUser.role)) {
+                throw new ApiError(httpStatus.FORBIDDEN, "You don't have permission to access this feature")
+            }
 
             next();
         }

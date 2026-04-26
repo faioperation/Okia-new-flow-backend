@@ -1,8 +1,6 @@
 -- AlterTable
 ALTER TABLE "bulk_upload_batches" ADD COLUMN     "ai_check" BOOLEAN NOT NULL DEFAULT false;
 
--- AlterTable
-ALTER TABLE "candidates" ADD COLUMN     "extracted_json" JSONB;
 
 -- CreateTable
 CREATE TABLE "quality_checks" (

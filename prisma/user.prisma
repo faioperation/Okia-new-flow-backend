@@ -9,8 +9,13 @@ model User {
   isBlocked Boolean   @default(true)
   otp       String?
   otpExpiry DateTime?
+  role      role    @default(ADMIN)
 
   importedOrganizations ImportedOrganization[]
+}
+
+enum role {
+  ADMIN
 }
 
 

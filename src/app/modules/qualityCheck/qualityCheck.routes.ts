@@ -4,10 +4,10 @@ import auth from "../../middlewares/checkAuth";
 
 const router = Router();
 
-router.post("/", auth(), qualityCheckControllers.createQualityCheck);
-router.get("/all", auth(), qualityCheckControllers.getAllQualityChecks);
-router.get("/:id", auth(), qualityCheckControllers.getQualityCheckById);
-router.delete("/:id", auth(), qualityCheckControllers.deleteQualityCheck);
+router.post("/", auth("ADMIN"), qualityCheckControllers.createQualityCheck);
+router.get("/all", auth("ADMIN"), qualityCheckControllers.getAllQualityChecks);
+router.get("/:id", auth("ADMIN"), qualityCheckControllers.getQualityCheckById);
+router.delete("/:id", auth("ADMIN"), qualityCheckControllers.deleteQualityCheck);
 
 
 export const qualityCheckRoutes = router;

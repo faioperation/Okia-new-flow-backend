@@ -8,13 +8,13 @@ const router = Router();
 // Excel upload and parsing (Saves to database under the logged user)
 router.post(
   "/upload",
-  auth(),
+  auth("ADMIN"),
   excelUploader.array("files", 100),
   importOrganizationControllers.uploadExcelFiles
 );
 
 // Fetch all uploaded information for the logged user
-router.get("/all", auth(), importOrganizationControllers.getAllImports);
+router.get("/all", auth("ADMIN"), importOrganizationControllers.getAllImports);
 
 
 
