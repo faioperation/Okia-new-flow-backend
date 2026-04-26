@@ -3,7 +3,9 @@ model CandidateCvFile {
   candidateId   String   @db.Uuid
   fileType      String   @db.VarChar(30)
   fileUrl       String
+  filePath      String?  @map("file_path")
   versionNo     Int      @default(1)
+
   generatedByAi Boolean  @default(false)
   createdAt     DateTime @default(now())
 

@@ -6,11 +6,14 @@ model BulkUploadBatch {
   duplicateFiles Int       @default(0) @map("duplicate_files")
   pendingFiles   Int       @default(0) @map("pending_files")
   status         String    @default("pending") @db.VarChar(30)
+  aiCheck        Boolean   @default(false) @map("ai_check")
   createdAt      DateTime  @default(now()) @map("created_at")
   completedAt    DateTime? @map("completed_at")
 
-  candidates Candidate[]
-  failLogs   BulkUploadFailLog[]
+  candidates     Candidate[]
+  failLogs       BulkUploadFailLog[]
+
+
 
   @@map("bulk_upload_batches")
 }

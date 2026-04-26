@@ -8,5 +8,5 @@ cvProcessingQueue.on('active', () => {
 });
 
 cvProcessingQueue.on('idle', () => {
-  console.log('CV Processing Queue is idle.');
+  console.log('CV Processing Queue is done✅.');
 });

@@ -17,7 +17,11 @@ uploads/
 
 # Prisma
 /src/generated/prisma
+<<<<<<< HEAD
+/uploads
+=======
 
 # OS files
 .DS_Store
 Thumbs.db
+>>>>>>> a3d9e978fc37451052749b09da3ee705462b04de

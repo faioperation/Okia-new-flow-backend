@@ -16,8 +16,11 @@ model Candidate {
 
   availabilityStatus String @default("available") @map("availability_status") @db.VarChar(30)
   qualityStatus      String @default("pending") @map("quality_status") @db.VarChar(30)
+  aiCheck            Boolean @default(false) @map("ai_check")
 
-  experienceYears Decimal? @map("experience_years") @db.Decimal(4, 1)
+  experienceYears Decimal? @map("experience_years") @db.Decimal(10, 2)
+
+
 
   professionalProfile String? @map("professional_profile")
   interests           String?
@@ -33,6 +36,8 @@ model Candidate {
   employmentHistories CandidateEmploymentHistory[]
   cvFiles             CandidateCvFile[]
   skills              CandidateSkill[]
+  qualityChecks       QualityCheck[]
 
   @@map("candidates")
 }
+

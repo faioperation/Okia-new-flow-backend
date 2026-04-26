@@ -104,8 +104,10 @@ const getAllCandidates = catchAsync(async (req, res) => {
       cvFiles: true,
       skills: true,
       educations: true,
-      employmentHistories: true
+      employmentHistories: true,
+      batch: true
     },
+
     orderBy: { createdAt: 'desc' }
   });
 
@@ -125,8 +127,10 @@ const getCandidateById = catchAsync(async (req, res) => {
       cvFiles: true,
       skills: true,
       educations: true,
-      employmentHistories: true
+      employmentHistories: true,
+      batch: true
     }
+
   });
 
   if (!result) {
