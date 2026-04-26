@@ -1,4 +1,32 @@
 -- CreateTable
+CREATE TABLE "bulk_upload_batches" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "total_files" INTEGER NOT NULL DEFAULT 0,
+    "completed_files" INTEGER NOT NULL DEFAULT 0,
+    "failed_files" INTEGER NOT NULL DEFAULT 0,
+    "duplicate_files" INTEGER NOT NULL DEFAULT 0,
+    "pending_files" INTEGER NOT NULL DEFAULT 0,
+    "status" VARCHAR(30) NOT NULL DEFAULT 'pending',
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "completed_at" TIMESTAMP(3),
+
+    CONSTRAINT "bulk_upload_batches_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "bulk_upload_fail_logs" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "batch_id" UUID NOT NULL,
+    "file_name" VARCHAR(255) NOT NULL,
+    "file_path" TEXT,
+    "reason" TEXT NOT NULL,
+    "error_stack" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "bulk_upload_fail_logs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "candidate_cv_files" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "candidateId" UUID NOT NULL,
@@ -69,7 +97,9 @@ CREATE TABLE "candidates" (
     "professional_profile" TEXT,
     "interests" TEXT,
     "raw_extracted_text" TEXT,
+    "extracted_json" JSONB,
     "profile_picture_url" VARCHAR(255),
+    "batch_id" UUID,
 
     CONSTRAINT "candidates_pkey" PRIMARY KEY ("id")
 );
@@ -166,6 +196,9 @@ CREATE INDEX "organizations_local_authority_idx" ON "organizations"("local_autho
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- AddForeignKey
+ALTER TABLE "bulk_upload_fail_logs" ADD CONSTRAINT "bulk_upload_fail_logs_batch_id_fkey" FOREIGN KEY ("batch_id") REFERENCES "bulk_upload_batches"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "candidate_cv_files" ADD CONSTRAINT "candidate_cv_files_candidateId_fkey" FOREIGN KEY ("candidateId") REFERENCES "candidates"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -176,6 +209,9 @@ ALTER TABLE "candidate_employment_histories" ADD CONSTRAINT "candidate_employmen
 
 -- AddForeignKey
 ALTER TABLE "candidate_skills" ADD CONSTRAINT "candidate_skills_candidateId_fkey" FOREIGN KEY ("candidateId") REFERENCES "candidates"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "candidates" ADD CONSTRAINT "candidates_batch_id_fkey" FOREIGN KEY ("batch_id") REFERENCES "bulk_upload_batches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "contacts" ADD CONSTRAINT "contacts_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
