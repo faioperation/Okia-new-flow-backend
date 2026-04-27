@@ -72,7 +72,7 @@ const processAiResponse = async (aiResponse: any) => {
 };
 
 
-const runQualityCheckWithRetry = async (batchId: string, attempt = 1) => {
+const runQualityCheckWithRetry = async (batchId: string, rules?: any, attempt = 1) => {
   console.log(`[AI Check] Attempt ${attempt} starting...`);
   
   try {
@@ -96,7 +96,10 @@ const runQualityCheckWithRetry = async (batchId: string, attempt = 1) => {
         'Content-Type': 'application/json',
         'X-Backend-Token': config.AI_HEADER_KEY
       },
-      body: JSON.stringify({ candidate_id: targetCandidateId })
+      body: JSON.stringify({ 
+        candidate_id: targetCandidateId,
+        rules: rules
+      })
     });
 
     console.log(`[AI Check] API Response Status: ${response.status}`);
@@ -133,7 +136,7 @@ const runQualityCheckWithRetry = async (batchId: string, attempt = 1) => {
     
     console.log(`[AI Check] Data not ready. Retrying in ${delay / 1000}s... (Attempt ${attempt + 1}/${maxAttempts})`);
 
-    setTimeout(() => runQualityCheckWithRetry(batchId, attempt + 1), delay);
+    setTimeout(() => runQualityCheckWithRetry(batchId, rules, attempt + 1), delay);
   } else {
     console.error(`[AI Check] Failed to get AI data after ${maxAttempts} attempts.`);
 
@@ -167,6 +170,7 @@ const getAllQualityChecks = async () => {
   const result = await prisma.qualityCheck.findMany({
     where: { deletedAt: null },
     include: { candidate: true },
+    orderBy: { createdAt: 'desc' }
   });
   return result;
 };
@@ -179,6 +183,27 @@ const getQualityCheckById = async (id: string) => {
   return result;
 };
 
+
+const updateQualityCheck = async (id: string, payload: Partial<{ score: number, qualityPass: boolean, fullResponse: any }>) => {
+  const result = await prisma.$transaction(async (tx) => {
+    const updatedCheck = await tx.qualityCheck.update({
+      where: { id },
+      data: payload,
+    });
+
+    if (payload.qualityPass !== undefined) {
+      await tx.candidate.update({
+        where: { id: updatedCheck.candidateId },
+        data: {
+          qualityStatus: payload.qualityPass ? 'passed' : 'failed'
+        }
+      });
+    }
+
+    return updatedCheck;
+  });
+  return result;
+};
 
 const deleteQualityCheck = async (id: string) => {
   const result = await prisma.qualityCheck.update({
@@ -193,5 +218,6 @@ export const qualityCheckServices = {
   syncAllPendingChecks,
   getAllQualityChecks,
   getQualityCheckById,
+  updateQualityCheck,
   deleteQualityCheck,
 };

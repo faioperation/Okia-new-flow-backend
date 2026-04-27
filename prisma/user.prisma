@@ -10,8 +10,9 @@ model User {
   otp       String?
   otpExpiry DateTime?
   role      role    @default(ADMIN)
-
+  cvs       GeneratedCV[]
   importedOrganizations ImportedOrganization[]
+  importContacts        ImportContact[]
 }
 
 enum role {

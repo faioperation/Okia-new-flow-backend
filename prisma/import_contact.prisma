@@ -1,0 +1,14 @@
+model ImportContact {
+  id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                 String
+  payload                Json
+  
+  importedOrganizationId String?  @db.Uuid
+  importedOrganization   ImportedOrganization? @relation(fields: [importedOrganizationId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("import_contacts")
+}

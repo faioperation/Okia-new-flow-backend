@@ -7,6 +7,7 @@ export const createUserToken = (payload: Partial<TJwtPayload>) => {
     id: payload.id!,
     email: payload.email!,
     name: payload.name!,
+    role: payload.role!,
   };
 
   const accessToken = generateToken(
