@@ -2,9 +2,17 @@ model ImportedOrganization {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId    String
   payload   Json
+  
+  latitude  Float?
+  longitude Float?
+  region    String?
+  district  String?
+  country   String?
+
   createdAt DateTime @default(now()) @map("created_at")
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contacts ImportContact[]
 
   @@map("imported_organizations")
 }

@@ -18,7 +18,16 @@ const uploadCvs = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, "Maximum 100 CV files can be uploaded at once.");
   }
 
-  const batchId = await bulkImportServices.startBulkImport(files);
+  const { jobRole, minimumYearsExperience, requiredSkills, checkFormatting } = req.body;
+
+  const rules = {
+    job_role: jobRole,
+    min_years_exp: minimumYearsExperience ? Number(minimumYearsExperience) : undefined,
+    required_skills: typeof requiredSkills === 'string' ? JSON.parse(requiredSkills) : requiredSkills,
+    check_formatting: checkFormatting === 'true' || checkFormatting === true
+  };
+
+  const batchId = await bulkImportServices.startBulkImport(files, rules);
 
   // For immediate feedback in POST response, extract first file's text
   let firstFilePreview = null;
@@ -111,11 +120,17 @@ const getAllCandidates = catchAsync(async (req, res) => {
     orderBy: { createdAt: 'desc' }
   });
 
+  const formattedResult = result.map((candidate: any) => {
+    delete candidate.experienceYears;
+    return candidate;
+  });
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "All candidates fetched successfully",
-    data: result,
+    count: result.length,
+    data: formattedResult
   });
 });
 
@@ -137,11 +152,14 @@ const getCandidateById = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Candidate not found");
   }
 
+  const candidate: any = result;
+  delete candidate.experienceYears;
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Candidate fetched successfully",
-    data: result,
+    data: candidate,
   });
 });
 

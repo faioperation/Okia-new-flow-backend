@@ -1,0 +1,46 @@
+model GeneratedCV {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName         String
+  professionalTitle String  
+  location          String
+  contactDetails    String
+
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  profileTitle      String
+  profileContent    String
+
+  image             String   @default("default.png")
+  logo              String?
+
+  pdfUrl            String?
+
+  jobs              Job[]
+  educations        Education[]
+  qualityCheck      QualityCheck?
+
+  aiRaw             Json?    // optional → store full AI response
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Job {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company   String
+  role      String
+  period    String
+  responsibilities Json   // still flexible
+
+  cvId      String      @db.Uuid
+  cv        GeneratedCV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+}
+
+model Education {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title     String
+
+  cvId      String      @db.Uuid
+  cv        GeneratedCV @relation(fields: [cvId], references: [id], onDelete: Cascade)
+}

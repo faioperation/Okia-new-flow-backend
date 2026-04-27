@@ -55,9 +55,22 @@ const deleteQualityCheck = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateQualityCheck = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const payload = req.body;
+  const result = await qualityCheckServices.updateQualityCheck(id, payload);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Quality check updated successfully",
+    data: result,
+  });
+});
+
 export const qualityCheckControllers = {
   createQualityCheck,
   getAllQualityChecks,
   getQualityCheckById,
+  updateQualityCheck,
   deleteQualityCheck,
 };

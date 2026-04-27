@@ -3,6 +3,8 @@ import fs from 'fs/promises';
 import PQueue from 'p-queue';
 import { prisma } from '../../db_connection';
 
+import axios from 'axios';
+
 // Controlled concurrency queue (limit 5 files at a time)
 const excelProcessingQueue = new PQueue({ concurrency: 5 });
 
@@ -18,6 +20,20 @@ const parseExcelFile = async (filePath: string) => {
   }
 };
 
+const fetchGeodata = async (postcode: string) => {
+  if (!postcode) return null;
+  try {
+    const response = await axios.get(`https://api.postcodes.io/postcodes/${postcode.trim()}`);
+    if (response.data.status === 200) {
+      const { latitude, longitude, region, admin_district, country } = response.data.result;
+      return { latitude, longitude, region, district: admin_district, country };
+    }
+    return null;
+  } catch (error) {
+    return null; // Silently fail geocoding to not block the whole import
+  }
+};
+
 const processExcelFiles = async (files: Express.Multer.File[], userId: string) => {
   const results = await Promise.all(
     files.map(file =>
@@ -25,21 +41,51 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
         try {
           const jsonData = await parseExcelFile(file.path) as any[];
           
-          // Save every single item under a unique ID
+          // 2. Filter out duplicates based on OrganizationName and LocalAuthority
           if (Array.isArray(jsonData)) {
-            await prisma.importedOrganization.createMany({
-              data: jsonData.map(item => ({
-                userId,
-                payload: item as any,
-              }))
+            // Fetch existing payloads for this user to check for duplicates
+            const existingImports = await prisma.importedOrganization.findMany({
+              where: { userId },
+              select: { payload: true }
             });
-          }
 
-          await fs.unlink(file.path);
-          return {
-            fileName: file.originalname,
-            rowCount: jsonData.length,
-          };
+            // Create a set of existing "Name|Authority" keys for fast lookup
+            const existingKeys = new Set(
+              existingImports.map(imp => {
+                const p = imp.payload as any;
+                return `${p?.OrganizationName || ''}|${p?.LocalAuthority || ''}`.toLowerCase().trim();
+              })
+            );
+
+            // Filter and Geocode the new data
+            const uniqueNewData = [];
+            for (const item of jsonData) {
+              const key = `${item.OrganizationName || ''}|${item.LocalAuthority || ''}`.toLowerCase().trim();
+              if (!existingKeys.has(key)) {
+                // Fetch geodata for new items
+                const geodata = await fetchGeodata(item.Postcode || item.postcode);
+                uniqueNewData.push({
+                  userId,
+                  payload: item as any,
+                  ...geodata
+                });
+                existingKeys.add(key);
+              }
+            }
+
+            if (uniqueNewData.length > 0) {
+              await prisma.importedOrganization.createMany({
+                data: uniqueNewData
+              });
+            }
+
+            await fs.unlink(file.path);
+            return {
+              fileName: file.originalname,
+              rowCount: uniqueNewData.length,
+              skippedCount: jsonData.length - uniqueNewData.length
+            };
+          }
         } catch (error: any) {
           try {
             await fs.unlink(file.path);

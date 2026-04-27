@@ -9,6 +9,7 @@ import { qualityCheckServices } from "../qualityCheck/qualityCheck.service";
 const processSingleCv = async (
   file: Express.Multer.File, 
   batchId: string,
+  rules?: any,
   retryCount = 0
 ) => {
   const maxRetries = Number(process.env.CV_QUEUE_RETRY) || 2;
@@ -20,7 +21,8 @@ const processSingleCv = async (
     // 2. Parse Data
     const parsedData = await parseCandidateData(text);
 
-    // 3. Duplicate Detection
+    // 3. Duplicate Detection (Disabled per user request: "every cv can be upload")
+    /*
     const email = parsedData.contact?.email;
     const phone = parsedData.contact?.phone;
 
@@ -52,6 +54,7 @@ const processSingleCv = async (
       });
       return;
     }
+    */
 
     // 4. Database Transaction
     await prisma.$transaction(async (tx) => {
@@ -110,7 +113,7 @@ const processSingleCv = async (
 
   } catch (error: any) {
     if (retryCount < maxRetries) {
-      cvProcessingQueue.add(() => processSingleCv(file, batchId, retryCount + 1));
+      cvProcessingQueue.add(() => processSingleCv(file, batchId, rules, retryCount + 1));
       return;
     }
 
@@ -158,7 +161,7 @@ const processSingleCv = async (
       // Trigger AI Quality Check after extraction is fully complete with a 30s initial delay
       console.log(`[Batch ${batchId}] Waiting 30 seconds before starting AI Quality Check...`);
       setTimeout(() => {
-        qualityCheckServices.runQualityCheckWithRetry(batchId);
+        qualityCheckServices.runQualityCheckWithRetry(batchId, rules);
       }, 30 * 1000);
     }
   }
@@ -166,7 +169,7 @@ const processSingleCv = async (
 
 
 
-const startBulkImport = async (files: Express.Multer.File[]) => {
+const startBulkImport = async (files: Express.Multer.File[], rules?: any) => {
   const batch = await prisma.bulkUploadBatch.create({
     data: {
       totalFiles: files.length,
@@ -178,7 +181,7 @@ const startBulkImport = async (files: Express.Multer.File[]) => {
   console.log(`[Batch ${batch.id}] Start processing to convert into JSON... (${files.length} files)`);
 
   files.forEach(file => {
-    cvProcessingQueue.add(() => processSingleCv(file, batch.id));
+    cvProcessingQueue.add(() => processSingleCv(file, batch.id, rules));
   });
 
   return batch.id;

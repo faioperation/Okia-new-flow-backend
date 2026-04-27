@@ -17,16 +17,20 @@ const getAllCandidates = catchAsync(async (req: Request, res: Response) => {
       employmentHistories: true,
       batch: true
     },
-
-
     orderBy: { createdAt: 'desc' }
+  });
+
+  const formattedResult = result.map((candidate: any) => {
+    delete candidate.experienceYears;
+    return candidate;
   });
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
+    count: result.length,
     message: "All candidates fetched successfully (Public API)",
-    data: result,
+    data: formattedResult,
   });
 });
 

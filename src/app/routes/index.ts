@@ -5,9 +5,11 @@ import { organizationRoutes } from "../modules/organization/organization.routes"
 import { contactRoutes } from "../modules/contact/contact.routes";
 import { userRoutes } from "../modules/user/user.routes";
 import { bulkImportRoutes } from "../modules/bulkImport/bulkImport.routes";
-import { bulkCVRoutes } from "../modules/publicApi/bulkCV/bulkCV.routes";
+import { publicRoutes } from "../modules/publicApi/public.routes";
 import { qualityCheckRoutes } from "../modules/qualityCheck/qualityCheck.routes";
 import { importOrganizationRoutes } from "../modules/importOrganization/importOrganization.routes";
+import { generatedCvRoutes } from "../modules/generatedCv/generatedCv.routes";
+import { importContactRoutes } from "../modules/importContact/importContact.routes";
 
 
 
@@ -40,7 +42,7 @@ const modelRoutes = [
     },
     {
         path: "/public",
-        element: bulkCVRoutes
+        element: publicRoutes
     },
     {
         path: "/quality-checks",
@@ -49,6 +51,14 @@ const modelRoutes = [
     {
         path: "/import-organization",
         element: importOrganizationRoutes
+    },
+    {
+        path: "/generated-cv",
+        element: generatedCvRoutes
+    },
+    {
+        path: "/import-contact",
+        element: importContactRoutes
     }
 ]
 
