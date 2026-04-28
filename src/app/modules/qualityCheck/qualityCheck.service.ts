@@ -213,6 +213,11 @@ const deleteQualityCheck = async (id: string) => {
   return result;
 };
 
+const deleteAllQualityChecks = async () => {
+  const result = await prisma.qualityCheck.deleteMany({});
+  return result;
+};
+
 export const qualityCheckServices = {
   runQualityCheckWithRetry,
   syncAllPendingChecks,
@@ -220,4 +225,5 @@ export const qualityCheckServices = {
   getQualityCheckById,
   updateQualityCheck,
   deleteQualityCheck,
+  deleteAllQualityChecks,
 };

@@ -69,6 +69,8 @@ const processSingleCv = async (
           professionalProfile: parsedData.professional_summary,
           rawExtractedText: text,
           extractedJson: parsedData as any,
+          rawPdfPath: `/${file.path.replace(/\\/g, '/')}`,
+          rawPdfUrl: `${config.BACKEND_URL}/${file.path.replace(/\\/g, '/')}`,
           availabilityStatus: 'available',
           batchId: batchId,
           skills: {

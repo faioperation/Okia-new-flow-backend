@@ -67,10 +67,21 @@ const updateQualityCheck = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deleteAllQualityChecks = catchAsync(async (req: Request, res: Response) => {
+  const result = await qualityCheckServices.deleteAllQualityChecks();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "All quality checks deleted successfully",
+    data: result,
+  });
+});
+
 export const qualityCheckControllers = {
   createQualityCheck,
   getAllQualityChecks,
   getQualityCheckById,
   updateQualityCheck,
   deleteQualityCheck,
+  deleteAllQualityChecks,
 };

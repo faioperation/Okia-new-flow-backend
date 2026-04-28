@@ -24,11 +24,13 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
     select: { id: true, payload: true }
   });
 
-  // Create a lookup map for organizations (Key: "Name|Authority")
+  // Create a lookup map for organizations (Key: "NormalizedName|Authority")
   const orgLookup = new Map();
+  const normalizeName = (name: string) => (name || '').toLowerCase().replace(/\s+school$/i, '').trim();
+
   existingOrgs.forEach(org => {
     const p = org.payload as any;
-    const key = `${p?.OrganizationName || ''}|${p?.LocalAuthority || ''}`.toLowerCase().trim();
+    const key = `${normalizeName(p?.OrganizationName)}|${(p?.LocalAuthority || '').toLowerCase().trim()}`;
     orgLookup.set(key, org.id);
   });
 
@@ -40,14 +42,19 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
           
           if (Array.isArray(jsonData)) {
             const mappedData = jsonData.map(item => {
-              const key = `${item.OrganizationName || ''}|${item.LocalAuthority || ''}`.toLowerCase().trim();
+              const orgName = item.OrganizationName || null;
+              const localAuth = item.LocalAuthority || null;
+              
+              const key = `${normalizeName(orgName)}|${(localAuth || '').toLowerCase().trim()}`;
               const orgId = orgLookup.get(key) || null;
 
               return {
                 userId,
                 payload: item as any,
+                organizationName: normalizeName(orgName),
+                localAuthority: (localAuth || '').trim(),
                 importedOrganizationId: orgId
-              };
+              } as any;
             });
 
             await prisma.importContact.createMany({
@@ -84,6 +91,7 @@ const getAllImports = async (userId: string) => {
     include: {
       importedOrganization: {
         select: {
+          payload: true,
           latitude: true,
           longitude: true,
           region: true,
@@ -97,10 +105,20 @@ const getAllImports = async (userId: string) => {
 
   return result.map(item => {
     const payload = item.payload as object;
+    const org = item.importedOrganization;
+    
     return {
       id: item.id,
       ...payload,
-      organizationGeo: item.importedOrganization, // Include geodata from linked org
+      importedOrganizationId: item.importedOrganizationId,
+      organizationDetails: org ? {
+        ...(org.payload as object),
+        latitude: org.latitude,
+        longitude: org.longitude,
+        region: org.region,
+        district: org.district,
+        country: org.country,
+      } : null,
       createdAt: item.createdAt
     };
   });
@@ -113,8 +131,16 @@ const deleteImport = async (id: string, userId: string) => {
   return result;
 };
 
+const deleteAllImports = async (userId: string) => {
+  const result = await prisma.importContact.deleteMany({
+    where: { userId },
+  });
+  return result;
+};
+
 export const importContactServices = {
   processExcelFiles,
   getAllImports,
   deleteImport,
+  deleteAllImports,
 };

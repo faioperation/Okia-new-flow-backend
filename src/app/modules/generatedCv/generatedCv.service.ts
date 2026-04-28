@@ -4,12 +4,18 @@ import config from "../../config";
 const createGeneratedCv = async (userId: string, qualityCheckId: string) => {
   // 1. Check if a CV already exists for this qualityCheckId
   const qualityCheck = await prisma.qualityCheck.findUnique({
-    where: { id: qualityCheckId }
+    where: { id: qualityCheckId },
+    include: {
+      candidate: true
+    }
   });
 
   if (!qualityCheck) {
     throw new Error("QualityCheck record not found");
   }
+
+  const rawPdfUrl = qualityCheck.candidate?.rawPdfUrl;
+  const rawPdfPath = qualityCheck.candidate?.rawPdfPath;
 
   // 2. Call AI API to generate CV data
   const aiUrl = `${config.AI_API_URL}/cv-generate/${qualityCheckId}`;
@@ -45,6 +51,8 @@ const createGeneratedCv = async (userId: string, qualityCheckId: string) => {
           profileTitle: cvData.professional_profile.title,
           profileContent: cvData.professional_profile.content,
           aiRaw: aiResponse,
+          rawPdfPath,
+          rawPdfUrl,
         }
       });
 
@@ -80,8 +88,10 @@ const createGeneratedCv = async (userId: string, qualityCheckId: string) => {
           contactDetails: cvData.header.contact_details,
           profileTitle: cvData.professional_profile.title,
           profileContent: cvData.professional_profile.content,
-          logo: "https://edukai.kai.id/theme/edumy/images/header-logo2.png",
+          logo: "https://i.ibb.co.com/CsTwmrMG/Edukai-Logox.png",
           aiRaw: aiResponse,
+          rawPdfPath,
+          rawPdfUrl,
           jobs: {
             create: cvData.employment_history.jobs.map((job: any) => ({
               company: job.company_name,
@@ -182,10 +192,18 @@ const deleteGeneratedCv = async (id: string) => {
   return result;
 };
 
+const deleteAllGeneratedCvs = async (userId?: string) => {
+  const result = await prisma.generatedCV.deleteMany({
+    where: userId ? { userId } : {},
+  });
+  return result;
+};
+
 export const generatedCvServices = {
   createGeneratedCv,
   getAllGeneratedCvs,
   getGeneratedCvById,
   updateGeneratedCv,
-  deleteGeneratedCv
+  deleteGeneratedCv,
+  deleteAllGeneratedCvs
 };

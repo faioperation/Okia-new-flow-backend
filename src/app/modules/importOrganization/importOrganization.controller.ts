@@ -48,8 +48,21 @@ const deleteImport = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deleteAllImports = catchAsync(async (req: Request, res: Response) => {
+  const user = (req as any).user;
+  const result = await importOrganizationServices.deleteAllImports(user.id);
+  
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "All imported organizations deleted successfully",
+    data: result,
+  });
+});
+
 export const importOrganizationControllers = {
   uploadExcelFiles,
   getAllImports,
   deleteImport,
+  deleteAllImports,
 };
