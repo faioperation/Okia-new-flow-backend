@@ -13,6 +13,7 @@ router.post(
 );
 
 router.get("/all", auth("ADMIN"), importContactControllers.getAllImports);
+router.delete("/delete-all", auth("ADMIN"), importContactControllers.deleteAllImports);
 router.delete("/:id", auth("ADMIN"), importContactControllers.deleteImport);
 
 export const importContactRoutes = router;

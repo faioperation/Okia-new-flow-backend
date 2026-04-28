@@ -15,6 +15,9 @@ model GeneratedCV {
   logo              String?
 
   pdfUrl            String?
+  pdfPath           String?
+  rawPdfUrl         String?
+  rawPdfPath        String?
 
   jobs              Job[]
   educations        Education[]

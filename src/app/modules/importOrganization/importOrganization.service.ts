@@ -11,7 +11,7 @@ const excelProcessingQueue = new PQueue({ concurrency: 5 });
 const parseExcelFile = async (filePath: string) => {
   try {
     const workbook = XLSX.readFile(filePath);
-    const sheetName = workbook.SheetNames[0]; 
+    const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const data = XLSX.utils.sheet_to_json(sheet);
     return data;
@@ -40,7 +40,7 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
       excelProcessingQueue.add(async () => {
         try {
           const jsonData = await parseExcelFile(file.path) as any[];
-          
+
           // 2. Filter out duplicates based on OrganizationName and LocalAuthority
           if (Array.isArray(jsonData)) {
             // Fetch existing payloads for this user to check for duplicates
@@ -59,7 +59,11 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
 
             // Filter and Geocode the new data
             const uniqueNewData = [];
+            let count = 0;
             for (const item of jsonData) {
+              count++;
+              console.log(`[Import] Item ${count} start...`);
+
               const key = `${item.OrganizationName || ''}|${item.LocalAuthority || ''}`.toLowerCase().trim();
               if (!existingKeys.has(key)) {
                 // Fetch geodata for new items
@@ -71,12 +75,41 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
                 });
                 existingKeys.add(key);
               }
+              console.log(`[Import] Item ${count} done.✅`);
             }
 
             if (uniqueNewData.length > 0) {
-              await prisma.importedOrganization.createMany({
-                data: uniqueNewData
-              });
+              // We use a loop instead of createMany to get the IDs back for linking contacts
+              for (const orgData of uniqueNewData) {
+                const createdOrg = await prisma.importedOrganization.create({
+                  data: orgData
+                });
+
+                // Link existing contacts that match this organization
+                const payload = orgData.payload as any;
+                const orgName = payload.OrganizationName;
+                const localAuthority = payload.LocalAuthority;
+
+                if (orgName && localAuthority) {
+                  // Link contacts that match this organization using the new dedicated fields
+                  // @ts-ignore
+                  const updatedContacts = await prisma.importContact.updateMany({
+                    where: {
+                      userId,
+                      organizationName: orgName,
+                      localAuthority: localAuthority,
+                      importedOrganizationId: null,
+                    } as any,
+                    data: {
+                      importedOrganizationId: createdOrg.id
+                    }
+                  });
+
+                  if (updatedContacts.count > 0) {
+                    console.log(`[Link] Linked ${updatedContacts.count} existing contacts to new organization: ${orgName}`);
+                  }
+                }
+              }
             }
 
             await fs.unlink(file.path);
@@ -117,6 +150,11 @@ const getAllImports = async (userId: string) => {
     return {
       id: item.id, // The unique ID for this specific item
       ...payload,
+      latitude: item.latitude,
+      longitude: item.longitude,
+      region: item.region,
+      district: item.district,
+      country: item.country,
       createdAt: item.createdAt
     };
   });
@@ -129,8 +167,16 @@ const deleteImport = async (id: string, userId: string) => {
   return result;
 };
 
+const deleteAllImports = async (userId: string) => {
+  const result = await prisma.importedOrganization.deleteMany({
+    where: { userId },
+  });
+  return result;
+};
+
 export const importOrganizationServices = {
   processExcelFiles,
   getAllImports,
   deleteImport,
+  deleteAllImports,
 };

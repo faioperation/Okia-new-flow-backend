@@ -30,6 +30,7 @@
     "nodemailer": "^8.0.1",
     "p-queue": "^9.1.2",
     "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.18.0",
     "postcode": "^5.1.0",
     "tesseract.js": "^7.0.0",
     "ts-node-dev": "^2.0.0",
@@ -45,6 +46,7 @@
     "@types/node": "^25.6.0",
     "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^7.0.11",
+    "@types/pdfkit": "^0.17.6",
     "@types/zipcodes": "^8.0.5",
     "prisma": "^7.4.1",
     "typescript": "^5.9.3"

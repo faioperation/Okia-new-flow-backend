@@ -8,7 +8,6 @@ model ImportedOrganization {
   region    String?
   district  String?
   country   String?
-
   createdAt DateTime @default(now()) @map("created_at")
 
   user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)

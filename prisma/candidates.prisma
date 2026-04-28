@@ -28,6 +28,8 @@ model Candidate {
   rawExtractedText  String? @map("raw_extracted_text")
   extractedJson     Json?   @map("extracted_json")
   profilePictureUrl String? @map("profile_picture_url") @db.VarChar(255)
+  rawPdfPath        String? @map("raw_pdf_path")
+  rawPdfUrl         String? @map("raw_pdf_url")
 
   batchId String?          @map("batch_id") @db.Uuid
   batch   BulkUploadBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)

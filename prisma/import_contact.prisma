@@ -2,6 +2,8 @@ model ImportContact {
   id                     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId                 String
   payload                Json
+  organizationName       String?  @map("organization_name")
+  localAuthority         String?  @map("local_authority")
   
   importedOrganizationId String?  @db.Uuid
   importedOrganization   ImportedOrganization? @relation(fields: [importedOrganizationId], references: [id], onDelete: SetNull)
