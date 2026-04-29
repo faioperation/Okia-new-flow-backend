@@ -21,6 +21,6 @@ export default {
   BACKEND_URL: process.env.BACKEND_URL,
   AI_API_URL: process.env.AI_API_URL,
   AI_HEADER_KEY: process.env.AI_HEADER_KEY || 'ai_backend_task',
+  SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
+  SENDGRID_SENDER_EMAIL: process.env.SENDGRID_SENDER_EMAIL
 };
-
-

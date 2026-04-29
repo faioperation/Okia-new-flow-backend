@@ -5,6 +5,12 @@ type TSendResponse<T> = {
   message: string;
   statusCode: number;
   count?: number;
+  meta?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPage: number;
+  };
   data: T | T[] | null;
 };
 
@@ -12,6 +18,7 @@ export const sendResponse = <T>(res: Response, data: TSendResponse<T>) => {
   return res.status(data?.statusCode).json({
     success: true,
     message: data?.message,
+    meta: data?.meta,
     count: data?.count,
     data: data?.data,
   });

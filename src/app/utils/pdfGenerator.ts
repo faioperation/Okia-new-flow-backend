@@ -252,5 +252,7 @@ export const generateCvPdf = async (cvData: any, outputStream: Writable) => {
 
   doc.moveDown(2);
 
+
+  
   doc.end();
 };

@@ -27,7 +27,8 @@ const uploadCvs = catchAsync(async (req, res) => {
     check_formatting: checkFormatting === 'true' || checkFormatting === true
   };
 
-  const batchId = await bulkImportServices.startBulkImport(files, rules);
+  const userId = (req as any).user.id;
+  const batchId = await bulkImportServices.startBulkImport(files, rules, userId);
 
   // For immediate feedback in POST response, extract first file's text
   let firstFilePreview = null;

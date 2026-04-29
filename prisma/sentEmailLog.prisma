@@ -1,0 +1,18 @@
+model SentEmailLog {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  
+  generatedEmailId String   @db.Uuid @map("generated_email_id")
+  generatedEmail   GeneratedEmail @relation(fields: [generatedEmailId], references: [id], onDelete: Cascade)
+  
+  userId           String   @map("user_id")
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contactId        String   @db.Uuid @map("contact_id")
+  
+  status           String   @default("sent")
+  error            String?
+  
+  sentAt           DateTime @default(now()) @map("sent_at")
+
+  @@map("sent_email_logs")
+}

@@ -10,8 +10,9 @@ import { qualityCheckRoutes } from "../modules/qualityCheck/qualityCheck.routes"
 import { importOrganizationRoutes } from "../modules/importOrganization/importOrganization.routes";
 import { generatedCvRoutes } from "../modules/generatedCv/generatedCv.routes";
 import { importContactRoutes } from "../modules/importContact/importContact.routes";
-
-
+import { generatedEmailRoutes } from "../modules/generatedEmail/generatedEmail.routes";
+import { activityLogRoutes } from "../modules/activityLog/activityLog.routes";
+import { dashboardOverviewRoutes } from "../modules/dashboardOverview/dashboardOverview.routes";
 
 export const rootRoute = Router()
 
@@ -59,6 +60,18 @@ const modelRoutes = [
     {
         path: "/import-contact",
         element: importContactRoutes
+    },
+    {
+        path: "/generated-email",
+        element: generatedEmailRoutes
+    },
+    {
+        path: "/activity-logs",
+        element: activityLogRoutes
+    },
+    {
+        path: "/dashboard-overview",
+        element: dashboardOverviewRoutes
     }
 ]
 
