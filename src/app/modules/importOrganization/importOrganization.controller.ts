@@ -25,13 +25,14 @@ const uploadExcelFiles = catchAsync(async (req: Request, res: Response) => {
 
 const getAllImports = catchAsync(async (req: Request, res: Response) => {
   const user = (req as any).user;
-  const result = await importOrganizationServices.getAllImports(user.id);
+  const result = await importOrganizationServices.getAllImports(user.id, req.query);
   
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "All imported items fetched successfully",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 

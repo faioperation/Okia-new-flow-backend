@@ -1,0 +1,30 @@
+model GeneratedEmail {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  
+  generatedCvId    String   @db.Uuid @map("generated_cv_id")
+  generatedCv      GeneratedCV @relation(fields: [generatedCvId], references: [id], onDelete: Cascade)
+  
+  userId           String   @map("user_id")
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contactIds       String[] @db.Uuid @map("contact_ids")
+
+  subject          String?
+  salutation       String?
+  introParagraph   String?  @map("intro_paragraph")
+  keyHighlights    Json?    @map("key_highlights")
+  impactStatement  String?  @map("impact_statement")
+  closingStatement String?  @map("closing_statement")
+  nbFooter         String?  @map("nb_footer")
+  signatureBlock   Json?    @map("signature_block")
+  rawEmailResponse Json?    @map("raw_email_response")
+
+  sendEmail        Boolean  @default(false) @map("send_email")
+  sentEmailLogs    SentEmailLog[]
+
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  @@map("generated_emails")
+}

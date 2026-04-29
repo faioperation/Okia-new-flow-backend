@@ -22,6 +22,7 @@ model GeneratedCV {
   jobs              Job[]
   educations        Education[]
   qualityCheck      QualityCheck?
+  generatedEmails   GeneratedEmail[]
 
   aiRaw             Json?    // optional → store full AI response
 

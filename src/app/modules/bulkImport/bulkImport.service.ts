@@ -1,4 +1,5 @@
 import { prisma } from "../../db_connection";
+import { activityLogServices } from "../activityLog/activityLog.service";
 import { extractTextFromPdf } from "../../utils/bulk-import-utils/pdfExtractor";
 import { parseCandidateData } from "../../utils/bulk-import-utils/candidateParser";
 import { cvProcessingQueue } from "./bulkImport.queue";
@@ -171,7 +172,7 @@ const processSingleCv = async (
 
 
 
-const startBulkImport = async (files: Express.Multer.File[], rules?: any) => {
+const startBulkImport = async (files: Express.Multer.File[], rules: any, userId: string) => {
   const batch = await prisma.bulkUploadBatch.create({
     data: {
       totalFiles: files.length,
@@ -181,6 +182,14 @@ const startBulkImport = async (files: Express.Multer.File[], rules?: any) => {
   });
 
   console.log(`[Batch ${batch.id}] Start processing to convert into JSON... (${files.length} files)`);
+
+  // Log the activity
+  await activityLogServices.createLog(
+    userId,
+    "CANDIDATE_UPLOAD",
+    `Started bulk CV upload for ${files.length} files.`,
+    { batchId: batch.id, fileCount: files.length }
+  );
 
   files.forEach(file => {
     cvProcessingQueue.add(() => processSingleCv(file, batch.id, rules));

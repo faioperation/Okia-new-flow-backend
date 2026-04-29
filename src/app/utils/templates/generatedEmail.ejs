@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; }
+        .highlight { background-color: #f9f9f9; padding: 15px; border-left: 4px solid #D35400; margin: 20px 0; }
+        .footer { font-size: 0.8em; color: #777; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }
+        .signature { margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><%= salutation %>,</p>
+        
+        <p><%= introParagraph %></p>
+        
+        <% if (keyHighlights && Array.isArray(keyHighlights)) { %>
+            <div class="highlight">
+                <ul>
+                    <% keyHighlights.forEach(function(item) { %>
+                        <li><%= item %></li>
+                    <% }); %>
+                </ul>
+            </div>
+        <% } else if (keyHighlights && typeof keyHighlights === 'string') { %>
+            <div class="highlight">
+                <p><%= keyHighlights %></p>
+            </div>
+        <% } %>
+
+        <p><%= impactStatement %></p>
+        
+        <p><%= closingStatement %></p>
+
+        <div class="signature">
+            <% if (typeof signatureBlock === 'object' && signatureBlock !== null) { %>
+                <p><%= signatureBlock.name || '' %></p>
+                <p><%= signatureBlock.title || '' %></p>
+            <% } else { %>
+                <p><%= signatureBlock %></p>
+            <% } %>
+        </div>
+
+        <% if (nbFooter) { %>
+            <div class="footer">
+                <p><strong>NB:</strong> <%= nbFooter %></p>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>

@@ -4,7 +4,8 @@ import { candidateServices } from "./candidate.service";
 import httpStatus from "http-status";
 
 const createCandidate = catchAsync(async (req, res) => {
-  const result = await candidateServices.createCandidate(req.body);
+  const userId = (req as any).user.id;
+  const result = await candidateServices.createCandidate(req.body, userId);
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,

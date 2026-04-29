@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import fs from 'fs/promises';
 import PQueue from 'p-queue';
 import { prisma } from '../../db_connection';
+import { activityLogServices } from '../activityLog/activityLog.service';
 
 import axios from 'axios';
 
@@ -134,30 +135,111 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
     )
   );
 
+  // Log the activity
+  const totalImported = results.reduce((acc, curr) => acc + (curr.rowCount || 0), 0);
+  await activityLogServices.createLog(
+    userId,
+    "ORGANIZATION_IMPORT",
+    `Imported ${totalImported} organizations from ${files.length} files.`,
+    { fileCount: files.length, totalImported }
+  );
+
   return results;
 };
 
 // CRUD operations for Individual Imported Organizations
-const getAllImports = async (userId: string) => {
+const getAllImports = async (userId: string, query: any) => {
+  const { searchTerm, localAuthority, region, gender, phase, page = 1, limit = 10 } = query;
+
+  const skip = (Number(page) - 1) * Number(limit);
+  const take = Number(limit);
+
+  const where: any = {
+    userId,
+  };
+
+  // Construct AND array for multiple filters
+  const andConditions: any[] = [];
+
+  if (searchTerm) {
+    andConditions.push({
+      payload: {
+        path: ['OrganizationName'],
+        string_contains: searchTerm,
+      },
+    });
+  }
+
+  if (localAuthority) {
+    andConditions.push({
+      payload: {
+        path: ['LocalAuthority'],
+        string_contains: localAuthority,
+      },
+    });
+  }
+
+  if (gender) {
+    andConditions.push({
+      payload: {
+        path: ['Gender'],
+        string_contains: gender,
+      },
+    });
+  }
+
+  if (phase) {
+    andConditions.push({
+      payload: {
+        path: ['Phase'],
+        string_contains: phase,
+      },
+    });
+  }
+
+  if (region) {
+    andConditions.push({
+      region: {
+        contains: region,
+        mode: 'insensitive',
+      },
+    });
+  }
+
+  if (andConditions.length > 0) {
+    where.AND = andConditions;
+  }
+
   const result = await prisma.importedOrganization.findMany({
-    where: { userId },
+    where,
     orderBy: { createdAt: 'desc' },
+    skip,
+    take,
   });
 
-  // Transform to the requested format (showing payload data with unique ID)
-  return result.map(item => {
-    const payload = item.payload as object;
-    return {
-      id: item.id, // The unique ID for this specific item
-      ...payload,
-      latitude: item.latitude,
-      longitude: item.longitude,
-      region: item.region,
-      district: item.district,
-      country: item.country,
-      createdAt: item.createdAt
-    };
-  });
+  const total = await prisma.importedOrganization.count({ where });
+
+  return {
+    meta: {
+      page: Number(page),
+      limit: Number(limit),
+      total,
+      totalPage: Math.ceil(total / Number(limit)),
+    },
+    data: result.map(item => {
+      const payload = item.payload as object;
+      return {
+        id: item.id,
+        ...payload,
+        latitude: item.latitude,
+        longitude: item.longitude,
+        region: item.region,
+        district: item.district,
+        country: item.country,
+        createdAt: item.createdAt
+      };
+    }),
+  };
 };
 
 const deleteImport = async (id: string, userId: string) => {

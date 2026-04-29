@@ -25,14 +25,14 @@ const processExcelFiles = catchAsync(async (req: Request, res: Response) => {
 
 const getAllImports = catchAsync(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
-  const result = await importContactServices.getAllImports(userId);
+  const result = await importContactServices.getAllImports(userId, req.query);
   
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Imported contacts fetched successfully",
-    count: result.length,
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 

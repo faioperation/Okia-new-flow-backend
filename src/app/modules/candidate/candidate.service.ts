@@ -1,6 +1,7 @@
 import { prisma } from "../../db_connection";
+import { activityLogServices } from "../activityLog/activityLog.service";
 
-const createCandidate = async (payload: any) => {
+const createCandidate = async (payload: any, userId: string) => {
   const result = await prisma.candidate.create({
     data: payload,
     include: {
@@ -10,6 +11,17 @@ const createCandidate = async (payload: any) => {
       cvFiles: true,
     },
   });
+
+  // Log the activity
+  if (result) {
+    await activityLogServices.createLog(
+      userId,
+      "CANDIDATE_UPLOAD",
+      `Created candidate: ${result.candidateName}`,
+      { candidateId: result.id }
+    );
+  }
+
   return result;
 };
 

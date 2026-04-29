@@ -13,10 +13,11 @@ model User {
   cvs       GeneratedCV[]
   importedOrganizations ImportedOrganization[]
   importContacts        ImportContact[]
+  generatedEmails       GeneratedEmail[]
+  sentEmailLogs         SentEmailLog[]
+  activityLogs          ActivityLog[]
 }
 
 enum role {
   ADMIN
 }
-
-

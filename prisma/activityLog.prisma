@@ -1,0 +1,13 @@
+model ActivityLog {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  action    String   // e.g., "CANDIDATE_UPLOAD", "CV_PROCESSING", "CONTACT_IMPORT", "ORGANIZATION_IMPORT", "EMAIL_GENERATION", "EMAIL_SEND"
+  message   String   // Human-readable description
+  payload   Json?    // Technical details (e.g., counts, IDs)
+  
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("activity_logs")
+}

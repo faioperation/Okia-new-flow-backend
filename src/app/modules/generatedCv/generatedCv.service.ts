@@ -1,5 +1,6 @@
 import { prisma } from "../../db_connection";
 import config from "../../config";
+import { activityLogServices } from '../activityLog/activityLog.service';
 
 const createGeneratedCv = async (userId: string, qualityCheckId: string) => {
   // 1. Check if a CV already exists for this qualityCheckId
@@ -121,6 +122,16 @@ const createGeneratedCv = async (userId: string, qualityCheckId: string) => {
       include: { jobs: true, educations: true }
     });
   });
+
+  // Log the activity
+  if (result) {
+    await activityLogServices.createLog(
+      userId,
+      "CV_PROCESSING",
+      `Generated AI CV for ${result.firstName} (${result.professionalTitle})`,
+      { cvId: result.id, qualityCheckId }
+    );
+  }
 
   return result;
 };
