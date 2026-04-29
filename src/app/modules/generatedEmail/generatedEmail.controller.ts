@@ -89,6 +89,30 @@ const sendGeneratedEmail = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllSentEmailLogs = catchAsync(async (req: Request, res: Response) => {
+  const result = await generatedEmailServices.getAllSentEmailLogs();
+  
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "All sent email logs fetched successfully",
+    data: result,
+  });
+});
+
+const getSentEmailLogs = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const result = await generatedEmailServices.getSentEmailLogs(id);
+  
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Sent email logs fetched successfully",
+    data: result,
+  });
+});
+
+
 export const generatedEmailControllers = {
   createGeneratedEmail,
   getAllGeneratedEmails,
@@ -96,4 +120,6 @@ export const generatedEmailControllers = {
   updateGeneratedEmail,
   deleteGeneratedEmail,
   sendGeneratedEmail,
+  getAllSentEmailLogs,
+  getSentEmailLogs,
 };

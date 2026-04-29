@@ -169,7 +169,11 @@ const sendGeneratedEmail = async (id: string) => {
 
     const msg = {
       to: workEmail,
-      from: config.SENDGRID_SENDER_EMAIL || config.EMAIL_FROM || 'noreply@yourdomain.com',
+      from: {
+        email: config.SENDGRID_FROM_EMAIL || config.EMAIL_FROM || 'noreply@yourdomain.com',
+        name: config.SENDGRID_FROM_NAME || 'Edukai',
+      },
+      replyTo: config.SENDGRID_REPLY_TO_EMAIL || config.EMAIL_FROM,
       subject: generatedEmail.subject || 'Opportunity Brief',
       html: html,
       attachments: attachments,
@@ -225,6 +229,45 @@ const sendGeneratedEmail = async (id: string) => {
   return results;
 };
 
+const getSentEmailLogs = async (generatedEmailId: string) => {
+  const result = await prisma.sentEmailLog.findMany({
+    where: { generatedEmailId },
+    orderBy: { sentAt: 'desc' }
+  });
+
+  // Fetch contact details for each log
+  const formattedLogs = await Promise.all(result.map(async (log) => {
+    const contact = await prisma.importContact.findUnique({
+      where: { id: log.contactId }
+    });
+    return {
+      ...log,
+      contactDetails: contact ? contact.payload : null
+    };
+  }));
+
+  return formattedLogs;
+};
+
+const getAllSentEmailLogs = async () => {
+  const result = await prisma.sentEmailLog.findMany({
+    orderBy: { sentAt: 'desc' }
+  });
+
+  // Enrich each log with contact details
+  const formattedLogs = await Promise.all(result.map(async (log) => {
+    const contact = await prisma.importContact.findUnique({
+      where: { id: log.contactId }
+    });
+    return {
+      ...log,
+      contactDetails: contact ? contact.payload : null
+    };
+  }));
+
+  return formattedLogs;
+};
+
 export const generatedEmailServices = {
   createGeneratedEmail,
   getAllGeneratedEmails,
@@ -232,4 +275,6 @@ export const generatedEmailServices = {
   updateGeneratedEmail,
   deleteGeneratedEmail,
   sendGeneratedEmail,
+  getSentEmailLogs,
+  getAllSentEmailLogs,
 };
