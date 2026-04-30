@@ -217,19 +217,27 @@ const getQualityCheckById = async (id: string) => {
 };
 
 
-const updateQualityCheck = async (id: string, payload: Partial<{ score: number, qualityPass: boolean, fullResponse: any }>) => {
+const updateQualityCheck = async (id: string, payload: Partial<{ score: number, qualityPass: boolean, fullResponse: any, availabilityStatus: string }>) => {
   const result = await prisma.$transaction(async (tx) => {
     const updatedCheck = await tx.qualityCheck.update({
       where: { id },
       data: payload,
     });
 
+    const candidateUpdateData: any = {};
+    
     if (payload.qualityPass !== undefined) {
+      candidateUpdateData.qualityStatus = payload.qualityPass ? 'passed' : 'failed';
+    }
+
+    if (payload.availabilityStatus !== undefined) {
+      candidateUpdateData.availabilityStatus = payload.availabilityStatus;
+    }
+
+    if (Object.keys(candidateUpdateData).length > 0) {
       await tx.candidate.update({
         where: { id: updatedCheck.candidateId },
-        data: {
-          qualityStatus: payload.qualityPass ? 'passed' : 'failed'
-        }
+        data: candidateUpdateData
       });
     }
 
