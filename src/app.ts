@@ -14,6 +14,7 @@ app.use(
       "https://test4.fireai.agency",
       "http://localhost:3000",
       "http://localhost:5173",
+      "https://edukai-frontend-orcin.vercel.app",
     ],
     credentials: true,
   })
@@ -32,7 +33,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.use("/api",rootRoute)
+app.use("/api", rootRoute)
 app.use(globalErrorHandler);
 app.use(notFound)
 
