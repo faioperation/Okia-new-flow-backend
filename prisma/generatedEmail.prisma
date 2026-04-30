@@ -18,6 +18,7 @@ model GeneratedEmail {
   nbFooter         String?  @map("nb_footer")
   signatureBlock   Json?    @map("signature_block")
   rawEmailResponse Json?    @map("raw_email_response")
+  logoEKAI         String?  @default("https://i.ibb.co.com/ymw1D2kx/edukai-Info.jpg") @map("logo_ekai")
 
   sendEmail        Boolean  @default(false) @map("send_email")
   sentEmailLogs    SentEmailLog[]

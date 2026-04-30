@@ -212,12 +212,64 @@ const getAllImports = async (userId: string, query: any) => {
 
   const result = await prisma.importedOrganization.findMany({
     where,
+    include: {
+      _count: {
+        select: { contacts: true }
+      }
+    },
     orderBy: { createdAt: 'desc' },
-    skip,
-    take,
+    // Pagination will be handled in memory for merging
   });
 
-  const total = await prisma.importedOrganization.count({ where });
+  // Fetch manual organizations
+  const manualOrgs = await prisma.organization.findMany({
+    where: searchTerm ? {
+      name: { contains: searchTerm, mode: 'insensitive' }
+    } : {},
+    include: {
+      _count: {
+        select: { contacts: true }
+      }
+    }
+  });
+
+  // Map manual organizations to match imported format
+  const mappedManual = manualOrgs.map(org => ({
+    id: org.id,
+    OrganizationName: org.name,
+    LocalAuthority: org.localAuthority,
+    Postcode: org.postcode,
+    latitude: org.latitude ? parseFloat(org.latitude) : null,
+    longitude: org.longitude ? parseFloat(org.longitude) : null,
+    region: null, // Organization table doesn't have region
+    district: org.town,
+    country: org.country,
+    contactCount: org._count?.contacts || 0,
+    isManual: true,
+    createdAt: org.createdAt
+  }));
+
+  // Map imported organizations
+  const mappedImported = result.map(item => ({
+    id: item.id,
+    ...(item.payload as object),
+    latitude: item.latitude,
+    longitude: item.longitude,
+    region: item.region,
+    district: item.district,
+    country: item.country,
+    contactCount: (item as any)._count?.contacts || 0,
+    isManual: false,
+    createdAt: item.createdAt
+  }));
+
+  // Combine and sort
+  const combined = [...mappedManual, ...mappedImported].sort((a, b) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+  const total = combined.length;
+  const paginatedData = combined.slice(skip, skip + take);
 
   return {
     meta: {
@@ -226,19 +278,39 @@ const getAllImports = async (userId: string, query: any) => {
       total,
       totalPage: Math.ceil(total / Number(limit)),
     },
-    data: result.map(item => {
-      const payload = item.payload as object;
-      return {
-        id: item.id,
-        ...payload,
-        latitude: item.latitude,
-        longitude: item.longitude,
-        region: item.region,
-        district: item.district,
-        country: item.country,
-        createdAt: item.createdAt
-      };
-    }),
+    data: paginatedData,
+  };
+};
+
+const getImportById = async (id: string, userId: string) => {
+  const result = await prisma.importedOrganization.findUnique({
+    where: { id, userId },
+    include: {
+      contacts: true,
+      _count: {
+        select: { contacts: true }
+      }
+    }
+  });
+
+  if (!result) return null;
+
+  const payload = result.payload as object;
+  return {
+    id: result.id,
+    ...payload,
+    latitude: result.latitude,
+    longitude: result.longitude,
+    region: result.region,
+    district: result.district,
+    country: result.country,
+    contactCount: (result as any)._count?.contacts || 0,
+    contacts: result.contacts.map(c => ({
+      id: c.id,
+      ...(c.payload as object),
+      createdAt: c.createdAt
+    })),
+    createdAt: result.createdAt
   };
 };
 
@@ -259,6 +331,7 @@ const deleteAllImports = async (userId: string) => {
 export const importOrganizationServices = {
   processExcelFiles,
   getAllImports,
+  getImportById,
   deleteImport,
   deleteAllImports,
 };

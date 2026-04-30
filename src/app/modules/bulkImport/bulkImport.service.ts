@@ -6,6 +6,7 @@ import { cvProcessingQueue } from "./bulkImport.queue";
 import fs from 'fs/promises';
 import config from "../../config";
 import { qualityCheckServices } from "../qualityCheck/qualityCheck.service";
+import { getCoordinates } from "../../utils/geocoder";
 
 const processSingleCv = async (
   file: Express.Multer.File, 
@@ -13,7 +14,7 @@ const processSingleCv = async (
   rules?: any,
   retryCount = 0
 ) => {
-  const maxRetries = Number(process.env.CV_QUEUE_RETRY) || 2;
+  const maxRetries = config.CV_QUEUE_RETRY;
   
   try {
     // 1. Extract Text
@@ -22,40 +23,17 @@ const processSingleCv = async (
     // 2. Parse Data
     const parsedData = await parseCandidateData(text);
 
-    // 3. Duplicate Detection (Disabled per user request: "every cv can be upload")
-    /*
-    const email = parsedData.contact?.email;
-    const phone = parsedData.contact?.phone;
-
-    const existingCandidate = await prisma.candidate.findFirst({
-      where: {
-        OR: [
-          { emailAddress: email && email !== "" ? email : undefined },
-          { contactNumber: phone && phone !== "" ? phone : undefined }
-        ]
+    // Geocode address
+    let latitude = null;
+    let longitude = null;
+    if (parsedData.contact?.location) {
+      const coords = await getCoordinates(parsedData.contact.location);
+      if (coords) {
+        latitude = coords.lat;
+        longitude = coords.lng;
       }
-    });
-
-    if (existingCandidate) {
-      await prisma.bulkUploadBatch.update({
-        where: { id: batchId },
-        data: { 
-          duplicateFiles: { increment: 1 },
-          pendingFiles: { decrement: 1 }
-        }
-      });
-
-      await prisma.bulkUploadFailLog.create({
-        data: {
-          batchId,
-          fileName: file.originalname,
-          filePath: file.path,
-          reason: `Duplicate detected: ${email || phone}`,
-        }
-      });
-      return;
     }
-    */
+
 
     // 4. Database Transaction
     await prisma.$transaction(async (tx) => {
@@ -66,6 +44,8 @@ const processSingleCv = async (
           contactNumber: parsedData.contact?.phone,
           jobTitle: parsedData.employment_history?.[0]?.job_title || "",
           address: parsedData.contact?.location,
+          latitude,
+          longitude,
           experienceYears: Math.min(parsedData.total_years_experience || 0, 100),
           professionalProfile: parsedData.professional_summary,
           rawExtractedText: text,

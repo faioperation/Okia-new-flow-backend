@@ -14,9 +14,10 @@ router.post(
 );
 
 // Fetch all uploaded information for the logged user
-router.get("/all", auth("ADMIN"), importOrganizationControllers.getAllImports);
+router.get('/all', auth('ADMIN'), importOrganizationControllers.getAllImports);
+router.get('/:id', auth('ADMIN'), importOrganizationControllers.getImportById);
 
 router.delete("/delete-all", auth("ADMIN"), importOrganizationControllers.deleteAllImports);
-router.delete("/:id", auth("ADMIN"), importOrganizationControllers.deleteImport);
+router.delete('/:id', auth('ADMIN'), importOrganizationControllers.deleteImport);
 
 export const importOrganizationRoutes = router;

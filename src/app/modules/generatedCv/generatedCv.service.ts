@@ -1,6 +1,9 @@
 import { prisma } from "../../db_connection";
 import config from "../../config";
 import { activityLogServices } from '../activityLog/activityLog.service';
+import { generateCvPdf } from "../../utils/pdfGenerator";
+import path from "path";
+import fs from "fs";
 
 const createGeneratedCv = async (userId: string, qualityCheckId: string) => {
   // 1. Check if a CV already exists for this qualityCheckId
@@ -210,11 +213,54 @@ const deleteAllGeneratedCvs = async (userId?: string) => {
   return result;
 };
 
+const generateAndSavePdf = async (id: string) => {
+  const result = await prisma.generatedCV.findUnique({
+    where: { id },
+    include: { jobs: true, educations: true }
+  });
+  
+  if (!result) {
+    throw new Error("Generated CV not found");
+  }
+
+  // Ensure upload directory exists
+  const uploadDir = path.join(process.cwd(), "uploads", "generatedCVPdf");
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const fileName = `cv-${id}-${Date.now()}.pdf`;
+  const relativePath = `/uploads/generatedCVPdf/${fileName}`;
+  const absolutePath = path.join(process.cwd(), "uploads", "generatedCVPdf", fileName);
+
+  // Create a write stream to save the file
+  const writeStream = fs.createWriteStream(absolutePath);
+
+  // Generate and save the PDF
+  await generateCvPdf(result, writeStream);
+
+  // Wait for the stream to finish
+  return new Promise((resolve, reject) => {
+    writeStream.on("finish", async () => {
+      const updated = await prisma.generatedCV.update({
+        where: { id },
+        data: {
+          pdfPath: relativePath,
+          pdfUrl: `/uploads/generatedCVPdf/${fileName}` // Simplified URL
+        } as any
+      });
+      resolve(updated);
+    });
+    writeStream.on("error", reject);
+  });
+};
+
 export const generatedCvServices = {
   createGeneratedCv,
   getAllGeneratedCvs,
   getGeneratedCvById,
   updateGeneratedCv,
   deleteGeneratedCv,
-  deleteAllGeneratedCvs
+  deleteAllGeneratedCvs,
+  generateAndSavePdf
 };

@@ -1,7 +1,17 @@
 import { prisma } from "../../db_connection";
 import { activityLogServices } from "../activityLog/activityLog.service";
+import { getCoordinates } from "../../utils/geocoder";
 
 const createCandidate = async (payload: any, userId: string) => {
+  // Geocode address if present
+  if (payload.address) {
+    const coords = await getCoordinates(payload.address);
+    if (coords) {
+      payload.latitude = coords.lat;
+      payload.longitude = coords.lng;
+    }
+  }
+
   const result = await prisma.candidate.create({
     data: payload,
     include: {
@@ -51,6 +61,15 @@ const getSingleCandidate = async (id: string) => {
 };
 
 const updateCandidate = async (id: string, payload: any) => {
+  // Geocode address if updated
+  if (payload.address) {
+    const coords = await getCoordinates(payload.address);
+    if (coords) {
+      payload.latitude = coords.lat;
+      payload.longitude = coords.lng;
+    }
+  }
+
   const result = await prisma.candidate.update({
     where: { id },
     data: payload,

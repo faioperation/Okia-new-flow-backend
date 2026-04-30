@@ -3,6 +3,7 @@ import config from "../../config";
 import ApiError from "../../errors/ApiError";
 import httpStatus from "http-status";
 import { activityLogServices } from '../activityLog/activityLog.service';
+import { generatedCvServices } from '../generatedCv/generatedCv.service';
 import sgMail from '@sendgrid/mail';
 import ejs from 'ejs';
 import path from 'path';
@@ -22,7 +23,7 @@ const createGeneratedEmail = async (userId: string, generatedCvId: string, conta
 
   // 2. Call AI API to generate email data
   const aiUrl = `${config.AI_API_URL}/mailGen/${generatedCvId}`;
-  
+
   const response = await fetch(aiUrl, {
     method: 'POST',
     headers: {
@@ -55,8 +56,8 @@ const createGeneratedEmail = async (userId: string, generatedCvId: string, conta
       rawEmailResponse: aiResponse,
     },
     include: {
-        generatedCv: true,
-        user: true
+      generatedCv: true,
+      user: true
     }
   });
 
@@ -70,24 +71,45 @@ const createGeneratedEmail = async (userId: string, generatedCvId: string, conta
     );
   }
 
+  if (result) {
+    const emailData: any = result;
+    delete emailData.rawEmailResponse;
+    return emailData;
+  }
+
   return result;
 };
 
 const getAllGeneratedEmails = async (userId?: string) => {
   const result = await prisma.generatedEmail.findMany({
     where: userId ? { userId, deletedAt: null } : { deletedAt: null },
-    
     orderBy: { createdAt: 'desc' }
   });
-  return result;
+
+  return result.map(item => {
+    const emailData: any = item;
+    delete emailData.rawEmailResponse;
+    return emailData;
+  });
 };
 
 const getGeneratedEmailById = async (id: string) => {
   const result = await prisma.generatedEmail.findUnique({
     where: { id },
+    include: {
+      generatedCv: true,
+      user: true
+    }
   });
 
   if (result?.deletedAt) return null;
+
+  if (result) {
+    const emailData: any = result;
+    delete emailData.rawEmailResponse;
+    return emailData;
+  }
+
   return result;
 };
 
@@ -134,15 +156,19 @@ const sendGeneratedEmail = async (id: string) => {
 
   const templatePath = path.join(__dirname, "../../utils/templates/generatedEmail.ejs");
 
-  const emailPromises = contacts.map(async (contact) => {
+  const results = [];
+  for (const contact of contacts) {
     const payload = contact.payload as any;
     // Extract WorkEmail with fallbacks
     const workEmail = payload.WorkEmail || payload.workEmail || payload.Email || payload.email;
 
     if (!workEmail) {
       console.warn(`No email found for contact ${contact.id}`);
-      return { contactId: contact.id, status: 'skipped', reason: 'No email found' };
+      results.push({ contactId: contact.id, status: 'skipped', reason: 'No email found' });
+      continue;
     }
+
+    console.log(`Sending email to: ${workEmail}...`);
 
     const html = await ejs.renderFile(templatePath, {
       salutation: generatedEmail.salutation,
@@ -152,15 +178,31 @@ const sendGeneratedEmail = async (id: string) => {
       closingStatement: generatedEmail.closingStatement,
       nbFooter: generatedEmail.nbFooter,
       signatureBlock: generatedEmail.signatureBlock,
+      logo: generatedEmail.generatedCv.logo,
+      logoEKAI: generatedEmail.logoEKAI,
     });
 
     const attachments = [];
-    if (generatedEmail.generatedCv.pdfPath) {
-      const absolutePdfPath = path.join(process.cwd(), generatedEmail.generatedCv.pdfPath);
+    let pdfPath = generatedEmail.generatedCv.pdfPath;
+
+    // If generated CV PDF is missing, try to generate it now
+    if (!pdfPath) {
+      try {
+        const updatedCv: any = await generatedCvServices.generateAndSavePdf(generatedEmail.generatedCvId);
+        pdfPath = updatedCv.pdfPath;
+      } catch (error) {
+        console.error("Failed to generate CV PDF on the fly:", error);
+        // Fallback to raw CV if generation fails
+        pdfPath = generatedEmail.generatedCv.rawPdfPath;
+      }
+    }
+
+    if (pdfPath) {
+      const absolutePdfPath = path.join(process.cwd(), pdfPath);
       if (fs.existsSync(absolutePdfPath)) {
         attachments.push({
           content: fs.readFileSync(absolutePdfPath).toString("base64"),
-          filename: `CV-${generatedEmail.generatedCv.firstName}.pdf`,
+          filename: `${generatedEmail.generatedCv.firstName}.pdf`,
           type: "application/pdf",
           disposition: "attachment",
         });
@@ -181,6 +223,7 @@ const sendGeneratedEmail = async (id: string) => {
 
     try {
       await sgMail.send(msg);
+      console.log(`Successfully sent email to: ${workEmail}`);
       // Create log in database
       await prisma.sentEmailLog.create({
         data: {
@@ -190,7 +233,7 @@ const sendGeneratedEmail = async (id: string) => {
           status: 'sent',
         }
       });
-      return { contactId: contact.id, status: 'sent' };
+      results.push({ contactId: contact.id, status: 'sent' });
     } catch (error: any) {
       console.error(`Failed to send email to ${workEmail}:`, error.response?.body || error.message);
       // Create failure log in database
@@ -203,11 +246,9 @@ const sendGeneratedEmail = async (id: string) => {
           error: error.message,
         }
       });
-      return { contactId: contact.id, status: 'failed', error: error.message };
+      results.push({ contactId: contact.id, status: 'failed', error: error.message });
     }
-  });
-
-  const results = await Promise.all(emailPromises);
+  }
 
   // Update generated email status if at least one email was sent successfully
   const successfullySent = results.some(r => r.status === 'sent');
