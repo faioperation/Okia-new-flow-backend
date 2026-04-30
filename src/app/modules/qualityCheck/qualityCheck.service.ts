@@ -218,21 +218,33 @@ const getQualityCheckById = async (id: string) => {
 };
 
 
-const updateQualityCheck = async (id: string, payload: Partial<{ score: number, qualityPass: boolean, fullResponse: any, availabilityStatus: AvailabilityStatus }>) => {
+const updateQualityCheck = async (id: string, payload: any) => {
   const result = await prisma.$transaction(async (tx) => {
+    const { candidate, ...qualityCheckData } = payload;
+
+    // Fields to protect from manual updates
+    const protectedFields = ['id', 'candidateId', 'cvId', 'createdAt', 'updatedAt', 'deletedAt', 'fullResponse'];
+    protectedFields.forEach(field => delete qualityCheckData[field]);
+
+    // 1. Update QualityCheck
     const updatedCheck = await tx.qualityCheck.update({
       where: { id },
-      data: payload,
+      data: qualityCheckData,
     });
 
-    const candidateUpdateData: any = {};
+    // 2. Prepare Candidate Update
+    const candidateUpdateData = { ...(candidate || {}) };
     
-    if (payload.qualityPass !== undefined) {
-      candidateUpdateData.qualityStatus = payload.qualityPass ? 'passed' : 'failed';
-    }
+    // Ensure protected candidate fields are not overwritten
+    const protectedCandidateFields = ['id', 'createdAt', 'updatedAt', 'batchId'];
+    protectedCandidateFields.forEach(field => delete candidateUpdateData[field]);
 
-    if (payload.availabilityStatus !== undefined) {
-      candidateUpdateData.availabilityStatus = payload.availabilityStatus;
+    // Auto-sync status if passed in root
+    if (qualityCheckData.qualityPass !== undefined) {
+      candidateUpdateData.qualityStatus = qualityCheckData.qualityPass ? 'passed' : 'failed';
+    }
+    if (qualityCheckData.availabilityStatus !== undefined) {
+      candidateUpdateData.availabilityStatus = qualityCheckData.availabilityStatus;
     }
 
     if (Object.keys(candidateUpdateData).length > 0) {

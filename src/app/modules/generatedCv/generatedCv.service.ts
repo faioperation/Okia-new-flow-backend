@@ -246,7 +246,7 @@ const generateAndSavePdf = async (id: string) => {
         where: { id },
         data: {
           pdfPath: relativePath,
-          pdfUrl: `/uploads/generatedCVPdf/${fileName}` // Simplified URL
+          pdfUrl: `${config.BACKEND_URL}/uploads/generatedCVPdf/${fileName}`
         } as any
       });
       resolve(updated);
