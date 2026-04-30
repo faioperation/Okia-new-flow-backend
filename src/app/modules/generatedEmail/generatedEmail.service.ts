@@ -4,6 +4,7 @@ import ApiError from "../../errors/ApiError";
 import httpStatus from "http-status";
 import { activityLogServices } from '../activityLog/activityLog.service';
 import { generatedCvServices } from '../generatedCv/generatedCv.service';
+import { QueryBuilder } from "../../utils/QuaryBuilder";
 import sgMail from '@sendgrid/mail';
 import ejs from 'ejs';
 import path from 'path';
@@ -80,17 +81,48 @@ const createGeneratedEmail = async (userId: string, generatedCvId: string, conta
   return result;
 };
 
-const getAllGeneratedEmails = async (userId?: string) => {
+const getAllGeneratedEmails = async (query: any) => {
+  const generatedEmailQuery = new QueryBuilder(query)
+    .filter()
+    .sort('createdAt')
+    .paginate()
+    .build();
+
+  const whereCondition = {
+    ...generatedEmailQuery.where,
+    deletedAt: null
+  };
+
   const result = await prisma.generatedEmail.findMany({
-    where: userId ? { userId, deletedAt: null } : { deletedAt: null },
-    orderBy: { createdAt: 'desc' }
+    where: whereCondition,
+    orderBy: generatedEmailQuery.orderBy,
+    skip: generatedEmailQuery.skip,
+    take: generatedEmailQuery.take,
+    include: {
+      generatedCv: true,
+      user: true
+    }
   });
 
-  return result.map(item => {
+  const total = await prisma.generatedEmail.count({
+    where: whereCondition
+  });
+
+  const data = result.map(item => {
     const emailData: any = item;
     delete emailData.rawEmailResponse;
     return emailData;
   });
+
+  return {
+    data,
+    meta: {
+      page: Number(query.page) || 1,
+      limit: Number(query.limit) || 10,
+      total,
+      totalPage: Math.ceil(total / (Number(query.limit) || 10)),
+    }
+  };
 };
 
 const getGeneratedEmailById = async (id: string) => {

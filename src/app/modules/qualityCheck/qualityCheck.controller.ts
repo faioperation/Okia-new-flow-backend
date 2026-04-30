@@ -4,6 +4,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import { qualityCheckServices } from "./qualityCheck.service";
 import ApiError from "../../errors/ApiError";
+import { prisma } from "../../db_connection";
 
 const createQualityCheck = catchAsync(async (req: Request, res: Response) => {
   const { batch_id } = req.body;
@@ -24,12 +25,26 @@ const createQualityCheck = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllQualityChecks = catchAsync(async (req: Request, res: Response) => {
-  const result = await qualityCheckServices.getAllQualityChecks();
+  const result = await qualityCheckServices.getAllQualityChecks(req.query);
+  
+  // Get global counts (ignoring filters for the dashboard)
+  const allChecks = await prisma.qualityCheck.findMany({
+    where: { deletedAt: null }
+  });
+  
+  const totalQualityPassCount = allChecks.filter(check => check.qualityPass === true).length;
+  const totalQualityFailedCount = allChecks.filter(check => check.qualityPass === false).length;
+  const totalUploadCount = allChecks.length;
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Quality checks fetched successfully",
-    data: result,
+    meta: result.meta,
+    totalUploadCount,
+    totalQualityPassCount,
+    totalQualityFailedCount,
+    data: result.data,
   });
 });
 

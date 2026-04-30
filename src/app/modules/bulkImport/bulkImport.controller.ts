@@ -43,6 +43,9 @@ const uploadCvs = catchAsync(async (req, res) => {
     statusCode: httpStatus.ACCEPTED,
     success: true,
     message: `${files.length} CV files uploaded and processing started.`,
+    totalUploadCount: files.length,
+    totalQualityPassCount: 0,
+    totalQualityFailedCount: 0,
     data: { 
       batchId,
       preview: firstFilePreview 
@@ -51,9 +54,30 @@ const uploadCvs = catchAsync(async (req, res) => {
 });
 
 const getBatches = catchAsync(async (req, res) => {
-  const result = await prisma.bulkUploadBatch.findMany({
+  const batches = await prisma.bulkUploadBatch.findMany({
     orderBy: { createdAt: 'desc' },
-    take: 20
+    take: 20,
+    include: {
+      candidates: {
+        select: { qualityStatus: true }
+      }
+    }
+  });
+
+  const result = batches.map(batch => {
+    const totalUploadCount = batch.totalFiles;
+    const totalQualityPassCount = batch.candidates.filter(c => c.qualityStatus === 'passed').length;
+    const totalQualityFailedCount = batch.candidates.filter(c => c.qualityStatus === 'failed').length;
+    
+    // @ts-ignore
+    delete batch.candidates;
+    
+    return {
+      ...batch,
+      totalUploadCount,
+      totalQualityPassCount,
+      totalQualityFailedCount
+    };
   });
   
   sendResponse(res, {
@@ -85,10 +109,17 @@ const getBatchById = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Batch not found");
   }
 
+  const totalUploadCount = result.totalFiles;
+  const totalQualityPassCount = result.candidates.filter(c => c.qualityStatus === 'passed').length;
+  const totalQualityFailedCount = result.candidates.filter(c => c.qualityStatus === 'failed').length;
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Batch status fetched successfully",
+    totalUploadCount,
+    totalQualityPassCount,
+    totalQualityFailedCount,
     data: result,
   });
 });

@@ -5,13 +5,14 @@ import httpStatus from "http-status";
 import { qualityCheckServices } from "../../qualityCheck/qualityCheck.service";
 
 const getAllQualityChecks = catchAsync(async (req: Request, res: Response) => {
-  const result = await qualityCheckServices.getAllQualityChecks();
+  const result = await qualityCheckServices.getAllQualityChecks(req.query);
   
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "All quality checks fetched successfully (Public API)",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 

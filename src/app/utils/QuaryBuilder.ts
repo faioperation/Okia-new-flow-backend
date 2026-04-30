@@ -1,4 +1,4 @@
-import { excludeFields } from "../constant.js";
+import { excludeFields } from "../constant";
 
 type QueryParams = Record<string, unknown>;
 
