@@ -4,7 +4,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import { generatedEmailServices } from "./generatedEmail.service";
 import ApiError from "../../errors/ApiError";
-import { GeneratedEmail } from "../../../generated/prisma";
+import { GeneratedEmail } from "@prisma/client";
 
 const createGeneratedEmail = catchAsync(async (req: Request, res: Response) => {
   const { generatedCvId, contactIds } = req.body;
