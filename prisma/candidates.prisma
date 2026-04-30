@@ -16,7 +16,7 @@ model Candidate {
   latitude  Float?
   longitude Float?
 
-  availabilityStatus String @default("available") @map("availability_status") @db.VarChar(30)
+  availabilityStatus AvailabilityStatus @default(available) @map("availability_status")
   qualityStatus      String @default("pending") @map("quality_status") @db.VarChar(30)
   aiCheck            Boolean @default(false) @map("ai_check")
 
@@ -45,3 +45,8 @@ model Candidate {
   @@map("candidates")
 }
 
+
+enum AvailabilityStatus {
+  available
+  notAvailable
+}
