@@ -37,7 +37,7 @@ const getAllImports = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getImportById = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const userId = (req as any).user.id;
   const result = await importOrganizationServices.getImportById(id, userId);
 
