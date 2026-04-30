@@ -36,6 +36,19 @@ const getAllImports = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getImportById = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userId = (req as any).user.id;
+  const result = await importOrganizationServices.getImportById(id, userId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Imported organization fetched successfully",
+    data: result,
+  });
+});
+
 const deleteImport = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id as string;
   const user = (req as any).user;
@@ -64,6 +77,7 @@ const deleteAllImports = catchAsync(async (req: Request, res: Response) => {
 export const importOrganizationControllers = {
   uploadExcelFiles,
   getAllImports,
+  getImportById,
   deleteImport,
   deleteAllImports,
 };

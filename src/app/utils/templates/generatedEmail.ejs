@@ -2,49 +2,87 @@
 <html>
 <head>
     <style>
-        body { font-family: 'Arial', sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; }
-        .highlight { background-color: #f9f9f9; padding: 15px; border-left: 4px solid #D35400; margin: 20px 0; }
-        .footer { font-size: 0.8em; color: #777; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }
-        .signature { margin-top: 20px; font-weight: bold; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 700px; margin: 20px auto; padding: 0; border: 1px solid #f0f0f0; background-color: #ffffff; }
+        .header-bar { background-color: #1a4376; color: #ffffff; padding: 10px 20px; font-weight: bold; font-size: 1.2em; }
+        .content { padding: 30px; }
+        .highlight-item { margin-bottom: 12px; display: flex; align-items: flex-start; }
+        .highlight-icon { margin-right: 10px; font-size: 1.1em; }
+        .highlight-text { flex: 1; }
+        .footer { font-size: 0.7em; color: #888; margin-top: 40px; padding: 20px; border-top: 1px solid #eee; line-height: 1.4; text-align: justify; }
+        .signature { margin-top: 30px; }
+        .signature-details { margin-top: 10px; font-size: 0.9em; color: #444; line-height: 1.4; }
+        .nb-section { margin-top: 25px; color: #555; font-size: 0.95em; line-height: 1.5; }
+        a { color: #1a4376; text-decoration: none; }
+        a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
     <div class="container">
-        <p><%= salutation %>,</p>
-        
-        <p><%= introParagraph %></p>
-        
-        <% if (keyHighlights && Array.isArray(keyHighlights)) { %>
-            <div class="highlight">
-                <ul>
+        <!-- Header Bar -->
+        <div class="header-bar">
+            Edukai Recruitment
+        </div>
+
+        <div class="content">
+            <p><%= salutation %></p>
+            
+            <p><%= introParagraph %></p>
+            
+            <!-- Key Highlights -->
+            <% if (keyHighlights && Array.isArray(keyHighlights)) { %>
+                <div style="margin: 25px 0;">
                     <% keyHighlights.forEach(function(item) { %>
-                        <li><%= item %></li>
+                        <div class="highlight-item">
+                            <span class="highlight-icon">- <%= item.icon %></span>
+                            <span class="highlight-text"><strong><%= item.title %>:</strong> <%= item.description %></span>
+                        </div>
                     <% }); %>
-                </ul>
-            </div>
-        <% } else if (keyHighlights && typeof keyHighlights === 'string') { %>
-            <div class="highlight">
-                <p><%= keyHighlights %></p>
-            </div>
-        <% } %>
+                </div>
+            <% } %>
 
-        <p><%= impactStatement %></p>
-        
-        <p><%= closingStatement %></p>
+            <p><%= impactStatement %></p>
+            
+            <p><%= closingStatement %></p>
 
-        <div class="signature">
-            <% if (typeof signatureBlock === 'object' && signatureBlock !== null) { %>
-                <p><%= signatureBlock.name || '' %></p>
-                <p><%= signatureBlock.title || '' %></p>
-            <% } else { %>
-                <p><%= signatureBlock %></p>
+            <!-- Signature -->
+            <div class="signature">
+                <p style="margin-bottom: 5px;"><strong>Kind regards,</strong></p>
+                <% if (typeof signatureBlock === 'object' && signatureBlock !== null) { %>
+                    <p style="margin: 0;"><strong><%= signatureBlock.name || '' %></strong></p>
+                    <div class="signature-details">
+                        <%= signatureBlock.designation || '' %><br>
+                        <% if (signatureBlock.contact) { %>
+                            T: <%= signatureBlock.contact.phone %><br>
+                            M: <%= signatureBlock.contact.mobile %><br>
+                            E: <a href="mailto:info@edukai.co.uk">info@edukai.co.uk</a><br>
+                            W: <a href="https://<%= signatureBlock.contact.website %>"><%= signatureBlock.contact.website %></a><br>
+                            A: <%= signatureBlock.contact.address %>
+                        <% } %>
+                    </div>
+                <% } else { %>
+                    <p><%= signatureBlock %></p>
+                <% } %>
+            </div>
+
+            <!-- NB Footer -->
+            <% if (nbFooter) { %>
+                <div class="nb-section">
+                    <p><%= nbFooter %></p>
+                </div>
             <% } %>
         </div>
 
-        <% if (nbFooter) { %>
-            <div class="footer">
-                <p><strong>NB:</strong> <%= nbFooter %></p>
+        <!-- Disclaimer Footer -->
+        <div class="footer">
+            <p style="font-size: 0.85em; margin-bottom: 10px;">Company registration number: 14337517 – Grove Resourcing Group Ltd t/a Edukai</p>
+            <p>This message is for the designated recipient only and may contain privileged, proprietary or otherwise private information. If you have received it in error, please notify the sender immediately and delete the original. Any other use of this email by you is prohibited. This email (including attachments, if any) may contain confidential and/or legally privileged information. If you receive this email in error, please inform sender immediately and be aware that any unauthorized use or disclosure of this email or any of its contents is strictly prohibited. If you have received this in error, please notify us by forwarding this email to <a href="mailto:info@edukai.co.uk">info@edukai.co.uk</a> and then delete the email completely from your system. This email and any attachments have been scanned for computer viruses. However, it is the responsibility of the recipient to conduct its own security measures. No responsibility is accepted by Edukai for loss or damage arising from the receipt of this email and any attachments. No responsibility is accepted by Edukai for personal emails.</p>
+        </div>
+
+        <!-- Edukai Info Logo -->
+        <% if (typeof logoEKAI === 'string' && logoEKAI) { %>
+            <div style="text-align: center; padding-bottom: 20px;">
+                <img src="<%= logoEKAI %>" alt="Edukai Info" style="width: 100%; max-width: 100%;">
             </div>
         <% } %>
     </div>

@@ -36,6 +36,19 @@ const getAllImports = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getImportById = catchAsync(async (req: Request, res: Response) => {
+  const userId = (req as any).user.id;
+  const id = req.params.id as string;
+  const result = await importContactServices.getImportById(id, userId);
+  
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Imported contact fetched successfully",
+    data: result,
+  });
+});
+
 const deleteImport = catchAsync(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const id = req.params.id as string;
@@ -65,6 +78,7 @@ const deleteAllImports = catchAsync(async (req: Request, res: Response) => {
 export const importContactControllers = {
   processExcelFiles,
   getAllImports,
+  getImportById,
   deleteImport,
   deleteAllImports,
 };

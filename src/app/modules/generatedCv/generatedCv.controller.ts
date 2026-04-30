@@ -90,52 +90,18 @@ const deleteAllGeneratedCvs = catchAsync(async (req: Request, res: Response) => 
 
 const generatePdf = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id as string;
-  const result = await generatedCvServices.getGeneratedCvById(id);
-  
-  if (!result) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Generated CV not found");
-  }
+  const updated = await generatedCvServices.generateAndSavePdf(id) as any;
 
-  // Ensure upload directory exists
-  const uploadDir = path.join(process.cwd(), "uploads", "generatedCVPdf");
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-
-  const fileName = `cv-${id}-${Date.now()}.pdf`;
-  const relativePath = `/uploads/generatedCVPdf/${fileName}`;
-  const absolutePath = path.join(process.cwd(), "uploads", "generatedCVPdf", fileName);
-  const fileUrl = `${req.protocol}://${req.get("host")}${relativePath}`;
-
-  // Create a write stream to save the file using absolute path
-  const writeStream = fs.createWriteStream(absolutePath);
-
-  // Generate and save the PDF
-  await generateCvPdf(result, writeStream);
-
-  // Wait for the stream to finish before updating DB and sending response
-  writeStream.on("finish", async () => {
-    // Update database with PDF info (using relative path)
-    // @ts-ignore
-    const updated = await prisma.generatedCV.update({
-      where: { id },
-      data: {
-        pdfPath: relativePath,
-        pdfUrl: fileUrl
-      } as any
-    });
-
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "PDF generated and saved successfully",
-      data: {
-        id: updated.id,
-        firstName: (updated as any).firstName,
-        pdfUrl: (updated as any).pdfUrl,
-        pdfPath: (updated as any).pdfPath
-      }
-    });
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "PDF generated and saved successfully",
+    data: {
+      id: updated.id,
+      firstName: updated.firstName,
+      pdfUrl: updated.pdfUrl,
+      pdfPath: updated.pdfPath
+    }
   });
 });
 

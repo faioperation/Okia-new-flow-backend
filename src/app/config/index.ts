@@ -25,4 +25,5 @@ export default {
   SENDGRID_FROM_EMAIL: process.env.SENDGRID_FROM_EMAIL,
   SENDGRID_FROM_NAME: process.env.SENDGRID_FROM_NAME,
   SENDGRID_REPLY_TO_EMAIL: process.env.SENDGRID_REPLY_TO_EMAIL,
+  CV_QUEUE_RETRY: Number(process.env.CV_QUEUE_RETRY) || 2,
 };
