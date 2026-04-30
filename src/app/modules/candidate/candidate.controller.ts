@@ -15,12 +15,13 @@ const createCandidate = catchAsync(async (req, res) => {
 });
 
 const getAllCandidates = catchAsync(async (req, res) => {
-  const result = await candidateServices.getAllCandidates();
+  const result = await candidateServices.getAllCandidates(req.query);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Candidates fetched successfully",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 

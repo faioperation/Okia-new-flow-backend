@@ -2,6 +2,8 @@ import { prisma } from "../../db_connection";
 import { activityLogServices } from "../activityLog/activityLog.service";
 import { getCoordinates } from "../../utils/geocoder";
 
+import { QueryBuilder } from "../../utils/QuaryBuilder";
+
 const createCandidate = async (payload: any, userId: string) => {
   // Geocode address if present
   if (payload.address) {
@@ -35,16 +37,30 @@ const createCandidate = async (payload: any, userId: string) => {
   return result;
 };
 
-const getAllCandidates = async () => {
+const getAllCandidates = async (query: any) => {
+  const queryBuilder = new QueryBuilder(query)
+    .filter()
+    .search(['candidateName', 'emailAddress', 'jobTitle'])
+    .sort('createdAt')
+    .paginate();
+
+  const { select, ...otherQueryOptions } = queryBuilder.build();
+  
   const result = await prisma.candidate.findMany({
+    ...otherQueryOptions,
     include: {
       skills: true,
     },
-    orderBy: {
-      createdAt: "desc",
-    },
   });
-  return result;
+
+  const total = await prisma.candidate.count({
+    where: otherQueryOptions.where
+  });
+
+  return {
+    data: result,
+    meta: queryBuilder.getMeta(total)
+  };
 };
 
 const getSingleCandidate = async (id: string) => {

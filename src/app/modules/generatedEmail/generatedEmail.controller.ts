@@ -25,15 +25,14 @@ const createGeneratedEmail = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllGeneratedEmails = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.query.userId as string | undefined;
-  const result = await generatedEmailServices.getAllGeneratedEmails(userId);
+  const result = await generatedEmailServices.getAllGeneratedEmails(req.query);
   
-  sendResponse<GeneratedEmail[]>(res, {
+  sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Generated emails fetched successfully",
-    count: result.length,
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 

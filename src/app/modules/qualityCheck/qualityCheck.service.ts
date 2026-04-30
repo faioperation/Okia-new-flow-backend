@@ -2,6 +2,7 @@ import { prisma } from "../../db_connection";
 import config from "../../config";
 import ApiError from "../../errors/ApiError";
 import httpStatus from "http-status";
+import { QueryBuilder } from "../../utils/QuaryBuilder";
 
 const processAiResponse = async (aiResponse: any) => {
   if (aiResponse.status !== 'success' || !Array.isArray(aiResponse.data)) {
@@ -166,13 +167,45 @@ const syncAllPendingChecks = async () => {
   }
 };
 
-const getAllQualityChecks = async () => {
+const getAllQualityChecks = async (query: any) => {
+  // Boolean conversion for qualityPass
+  if (query.qualityPass !== undefined) {
+    query.qualityPass = query.qualityPass === 'true' || query.qualityPass === true;
+  }
+
+  const qualityCheckQuery = new QueryBuilder(query)
+    .filter()
+    .search(['fullResponse', { candidate: ['candidateName', 'emailAddress'] }])
+    .sort('createdAt')
+    .paginate()
+    .build();
+
+  const whereCondition = {
+    ...qualityCheckQuery.where,
+    deletedAt: null
+  };
+
   const result = await prisma.qualityCheck.findMany({
-    where: { deletedAt: null },
+    where: whereCondition,
+    orderBy: qualityCheckQuery.orderBy,
+    skip: qualityCheckQuery.skip,
+    take: qualityCheckQuery.take,
     include: { candidate: true },
-    orderBy: { createdAt: 'desc' }
   });
-  return result;
+
+  const total = await prisma.qualityCheck.count({
+    where: whereCondition
+  });
+
+  return {
+    data: result,
+    meta: {
+      page: Number(query.page) || 1,
+      limit: Number(query.limit) || 10,
+      total,
+      totalPage: Math.ceil(total / (Number(query.limit) || 10)),
+    }
+  };
 };
 
 const getQualityCheckById = async (id: string) => {
