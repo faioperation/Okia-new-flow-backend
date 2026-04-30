@@ -3,6 +3,7 @@ import config from "../../config";
 import ApiError from "../../errors/ApiError";
 import httpStatus from "http-status";
 import { QueryBuilder } from "../../utils/QuaryBuilder";
+import { AvailabilityStatus } from "@prisma/client";
 
 const processAiResponse = async (aiResponse: any) => {
   if (aiResponse.status !== 'success' || !Array.isArray(aiResponse.data)) {
@@ -217,7 +218,7 @@ const getQualityCheckById = async (id: string) => {
 };
 
 
-const updateQualityCheck = async (id: string, payload: Partial<{ score: number, qualityPass: boolean, fullResponse: any, availabilityStatus: string }>) => {
+const updateQualityCheck = async (id: string, payload: Partial<{ score: number, qualityPass: boolean, fullResponse: any, availabilityStatus: AvailabilityStatus }>) => {
   const result = await prisma.$transaction(async (tx) => {
     const updatedCheck = await tx.qualityCheck.update({
       where: { id },

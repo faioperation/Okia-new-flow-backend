@@ -4,7 +4,7 @@ model QualityCheck {
   cvId         String?     @unique @db.Uuid
   score        Float       @default(0)
   qualityPass  Boolean     @default(false) @map("quality_pass")
-  availabilityStatus String? @default("available") @map("availability_status") @db.VarChar(30)
+  availabilityStatus AvailabilityStatus? @default(available) @map("availability_status")
   fullResponse Json?       @map("full_response")
   createdAt    DateTime    @default(now()) @map("created_at")
   cv           GeneratedCV? @relation(fields: [cvId], references: [id], onDelete: Cascade)
