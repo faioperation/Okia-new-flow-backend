@@ -136,7 +136,7 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
   );
 
   // Log the activity
-  const totalImported = results.reduce((acc, curr) => acc + (curr.rowCount || 0), 0);
+  const totalImported = results.reduce((acc, curr: any) => acc + (curr && 'rowCount' in curr ? (curr.rowCount || 0) : 0), 0);
   await activityLogServices.createLog(
     userId,
     "ORGANIZATION_IMPORT",
