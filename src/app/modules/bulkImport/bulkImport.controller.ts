@@ -30,25 +30,29 @@ const uploadCvs = catchAsync(async (req, res) => {
   const userId = (req as any).user.id;
   const batchId = await bulkImportServices.startBulkImport(files, rules, userId);
 
-  // For immediate feedback in POST response, extract first file's text
-  let firstFilePreview = null;
-  try {
-    const text = await extractTextFromPdf(files[0].path);
-    firstFilePreview = await parseCandidateData(text);
-  } catch (error) {
-    console.error("Preview extraction failed:", error);
-  }
+  // Fetch final results for the response
+  const finalBatch = await prisma.bulkUploadBatch.findUnique({
+    where: { id: batchId },
+    include: {
+      candidates: {
+        select: { qualityStatus: true }
+      }
+    }
+  });
+
+  const totalQualityPassCount = finalBatch?.candidates.filter(c => c.qualityStatus === 'passed').length || 0;
+  const totalQualityFailedCount = finalBatch?.candidates.filter(c => c.qualityStatus === 'failed').length || 0;
 
   sendResponse(res, {
-    statusCode: httpStatus.ACCEPTED,
+    statusCode: httpStatus.CREATED,
     success: true,
-    message: `${files.length} CV files uploaded and processing started.`,
+    message: `${files.length} CV files processed and quality checked successfully.`,
     totalUploadCount: files.length,
-    totalQualityPassCount: 0,
-    totalQualityFailedCount: 0,
+    totalQualityPassCount,
+    totalQualityFailedCount,
     data: { 
       batchId,
-      preview: firstFilePreview 
+      batch: finalBatch
     },
   });
 });

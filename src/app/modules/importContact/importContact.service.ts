@@ -277,7 +277,7 @@ const getAllImports = async (userId: string, query: any) => {
 };
 
 const getImportById = async (id: string, userId: string) => {
-  const result = await prisma.importContact.findUnique({
+  const result = await prisma.importContact.findFirst({
     where: { id, userId },
     include: {
       importedOrganization: true
@@ -300,7 +300,7 @@ const getImportById = async (id: string, userId: string) => {
 };
 
 const deleteImport = async (id: string, userId: string) => {
-  const result = await prisma.importContact.delete({
+  const result = await prisma.importContact.deleteMany({
     where: { id, userId },
   });
   return result;
@@ -313,10 +313,24 @@ const deleteAllImports = async (userId: string) => {
   return result;
 };
 
+const updateImport = async (id: string, userId: string, data: any) => {
+  const { payload, ...rootFields } = data;
+
+  const result = await prisma.importContact.updateMany({
+    where: { id, userId },
+    data: {
+      ...rootFields,
+      ...(payload && { payload: payload })
+    }
+  });
+  return result;
+};
+
 export const importContactServices = {
   processExcelFiles,
   getAllImports,
   getImportById,
+  updateImport,
   deleteImport,
   deleteAllImports,
 };

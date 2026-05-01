@@ -17,6 +17,7 @@ router.post(
 router.get('/all', auth('ADMIN'), importOrganizationControllers.getAllImports);
 router.get('/:id', auth('ADMIN'), importOrganizationControllers.getImportById);
 
+router.patch('/:id', auth('ADMIN'), importOrganizationControllers.updateImport);
 router.delete("/delete-all", auth("ADMIN"), importOrganizationControllers.deleteAllImports);
 router.delete('/:id', auth('ADMIN'), importOrganizationControllers.deleteImport);
 

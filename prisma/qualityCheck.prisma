@@ -4,6 +4,7 @@ model QualityCheck {
   cvId         String?     @unique @db.Uuid
   score        Float       @default(0)
   qualityPass  Boolean     @default(false) @map("quality_pass")
+  aiGenerated  Boolean     @default(false) @map("ai_generated")
   availabilityStatus AvailabilityStatus? @default(available) @map("availability_status")
   fullResponse Json?       @map("full_response")
   createdAt    DateTime    @default(now()) @map("created_at")

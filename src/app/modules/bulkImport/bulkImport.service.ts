@@ -126,27 +126,6 @@ const processSingleCv = async (
     } catch (e) {
       console.error("Cleanup failed for", file.path);
     }
-  } finally {
-    const updatedBatch = await prisma.bulkUploadBatch.findUnique({
-      where: { id: batchId }
-    });
-
-    if (updatedBatch && updatedBatch.pendingFiles === 0) {
-      await prisma.bulkUploadBatch.update({
-        where: { id: batchId },
-        data: { 
-          status: "completed",
-          completedAt: new Date()
-        }
-      });
-      console.log(`[Batch ${batchId}] CV EXTRACTION FINISHED. Results:- Passed: ${updatedBatch.completedFiles}, Failed: ${updatedBatch.failedFiles}, Duplicates: ${updatedBatch.duplicateFiles}`);
-      
-      // Trigger AI Quality Check after extraction is fully complete with a 30s initial delay
-      console.log(`[Batch ${batchId}] Waiting 30 seconds before starting AI Quality Check...`);
-      setTimeout(() => {
-        qualityCheckServices.runQualityCheckWithRetry(batchId, rules);
-      }, 30 * 1000);
-    }
   }
 };
 
@@ -171,9 +150,27 @@ const startBulkImport = async (files: Express.Multer.File[], rules: any, userId:
     { batchId: batch.id, fileCount: files.length }
   );
 
-  files.forEach(file => {
-    cvProcessingQueue.add(() => processSingleCv(file, batch.id, rules));
+  const processingPromises = files.map(file => {
+    return cvProcessingQueue.add(() => processSingleCv(file, batch.id, rules));
   });
+
+  // 1. Wait for all CV extractions to complete
+  await Promise.all(processingPromises);
+
+  // 2. Mark Batch as completed in terms of extraction
+  const updatedBatch = await prisma.bulkUploadBatch.update({
+    where: { id: batch.id },
+    data: { 
+      status: "completed",
+      completedAt: new Date()
+    }
+  });
+
+  console.log(`[Batch ${batch.id}] CV EXTRACTION FINISHED. Results:- Passed: ${updatedBatch.completedFiles}, Failed: ${updatedBatch.failedFiles}`);
+
+  // 3. Trigger AI Quality Check and WAIT for it to finish
+  console.log(`[Batch ${batch.id}] Starting AI Quality Check...`);
+  await qualityCheckServices.runQualityCheckWithRetry(batch.id, rules);
 
   return batch.id;
 };

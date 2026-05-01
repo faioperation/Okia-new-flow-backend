@@ -4,7 +4,8 @@ import { organizationServices } from "./organization.service";
 import httpStatus from "http-status";
 
 const createOrganization = catchAsync(async (req, res) => {
-  const result = await organizationServices.createOrganization(req.body);
+  const userId = (req as any).user.id;
+  const result = await organizationServices.createOrganization(userId, req.body);
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
@@ -14,7 +15,8 @@ const createOrganization = catchAsync(async (req, res) => {
 });
 
 const getAllOrganizations = catchAsync(async (req, res) => {
-  const result = await organizationServices.getAllOrganizations();
+  const userId = (req as any).user.id;
+  const result = await organizationServices.getAllOrganizations(userId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -25,7 +27,8 @@ const getAllOrganizations = catchAsync(async (req, res) => {
 
 const getSingleOrganization = catchAsync(async (req, res) => {
   const id = req.params.id as string;
-  const result = await organizationServices.getSingleOrganization(id);
+  const userId = (req as any).user.id;
+  const result = await organizationServices.getSingleOrganization(id, userId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -36,7 +39,8 @@ const getSingleOrganization = catchAsync(async (req, res) => {
 
 const updateOrganization = catchAsync(async (req, res) => {
   const id = req.params.id as string;
-  const result = await organizationServices.updateOrganization(id, req.body);
+  const userId = (req as any).user.id;
+  const result = await organizationServices.updateOrganization(id, userId, req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -47,11 +51,23 @@ const updateOrganization = catchAsync(async (req, res) => {
 
 const deleteOrganization = catchAsync(async (req, res) => {
   const id = req.params.id as string;
-  const result = await organizationServices.deleteOrganization(id);
+  const userId = (req as any).user.id;
+  const result = await organizationServices.deleteOrganization(id, userId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Organization deleted successfully",
+    data: result,
+  });
+});
+
+const deleteAllOrganizations = catchAsync(async (req, res) => {
+  const userId = (req as any).user.id;
+  const result = await organizationServices.deleteAllOrganizations(userId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "All organizations deleted successfully",
     data: result,
   });
 });
@@ -62,4 +78,5 @@ export const organizationControllers = {
   getSingleOrganization,
   updateOrganization,
   deleteOrganization,
+  deleteAllOrganizations,
 };

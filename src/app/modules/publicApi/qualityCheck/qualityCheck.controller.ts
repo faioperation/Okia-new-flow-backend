@@ -5,7 +5,7 @@ import httpStatus from "http-status";
 import { qualityCheckServices } from "../../qualityCheck/qualityCheck.service";
 
 const getAllQualityChecks = catchAsync(async (req: Request, res: Response) => {
-  const result = await qualityCheckServices.getAllQualityChecks(req.query);
+  const result = await qualityCheckServices.getAllQualityChecks(req.query, true);
   
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -18,7 +18,7 @@ const getAllQualityChecks = catchAsync(async (req: Request, res: Response) => {
 
 const getQualityCheckById = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id as string;
-  const result = await qualityCheckServices.getQualityCheckById(id);
+  const result = await qualityCheckServices.getQualityCheckById(id, true);
   
   sendResponse(res, {
     statusCode: httpStatus.OK,

@@ -4,7 +4,8 @@ import { contactServices } from "./contact.service";
 import httpStatus from "http-status";
 
 const createContact = catchAsync(async (req, res) => {
-  const result = await contactServices.createContact(req.body);
+  const userId = (req as any).user.id;
+  const result = await contactServices.createContact(userId, req.body);
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
@@ -14,7 +15,8 @@ const createContact = catchAsync(async (req, res) => {
 });
 
 const getAllContacts = catchAsync(async (req, res) => {
-  const result = await contactServices.getAllContacts();
+  const userId = (req as any).user.id;
+  const result = await contactServices.getAllContacts(userId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -25,7 +27,8 @@ const getAllContacts = catchAsync(async (req, res) => {
 
 const getSingleContact = catchAsync(async (req, res) => {
   const id = req.params.id as string;
-  const result = await contactServices.getSingleContact(id);
+  const userId = (req as any).user.id;
+  const result = await contactServices.getSingleContact(id, userId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -36,7 +39,8 @@ const getSingleContact = catchAsync(async (req, res) => {
 
 const updateContact = catchAsync(async (req, res) => {
   const id = req.params.id as string;
-  const result = await contactServices.updateContact(id, req.body);
+  const userId = (req as any).user.id;
+  const result = await contactServices.updateContact(id, userId, req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -47,11 +51,23 @@ const updateContact = catchAsync(async (req, res) => {
 
 const deleteContact = catchAsync(async (req, res) => {
   const id = req.params.id as string;
-  const result = await contactServices.deleteContact(id);
+  const userId = (req as any).user.id;
+  const result = await contactServices.deleteContact(id, userId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Contact deleted successfully",
+    data: result,
+  });
+});
+
+const deleteAllContacts = catchAsync(async (req, res) => {
+  const userId = (req as any).user.id;
+  const result = await contactServices.deleteAllContacts(userId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "All contacts deleted successfully",
     data: result,
   });
 });
@@ -62,4 +78,5 @@ export const contactControllers = {
   getSingleContact,
   updateContact,
   deleteContact,
+  deleteAllContacts,
 };

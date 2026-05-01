@@ -75,10 +75,24 @@ const deleteAllImports = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateImport = catchAsync(async (req: Request, res: Response) => {
+  const userId = (req as any).user.id;
+  const id = req.params.id as string;
+  const result = await importContactServices.updateImport(id, userId, req.body);
+  
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Imported contact updated successfully",
+    data: result,
+  });
+});
+
 export const importContactControllers = {
   processExcelFiles,
   getAllImports,
   getImportById,
+  updateImport,
   deleteImport,
   deleteAllImports,
 };
