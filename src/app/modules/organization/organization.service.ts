@@ -1,14 +1,15 @@
 import { prisma } from "../../db_connection";
 
-const createOrganization = async (payload: any) => {
+const createOrganization = async (userId: string, payload: any) => {
   const result = await prisma.organization.create({
-    data: payload,
+    data: { ...payload, userId },
   });
   return result;
 };
 
-const getAllOrganizations = async () => {
+const getAllOrganizations = async (userId: string) => {
   const result = await prisma.organization.findMany({
+    where: { userId },
     include: {
       _count: {
         select: { contacts: true },
@@ -21,9 +22,9 @@ const getAllOrganizations = async () => {
   return result;
 };
 
-const getSingleOrganization = async (id: string) => {
-  const result = await prisma.organization.findUnique({
-    where: { id },
+const getSingleOrganization = async (id: string, userId: string) => {
+  const result = await prisma.organization.findFirst({
+    where: { id, userId },
     include: {
       contacts: true,
     },
@@ -31,17 +32,24 @@ const getSingleOrganization = async (id: string) => {
   return result;
 };
 
-const updateOrganization = async (id: string, payload: any) => {
-  const result = await prisma.organization.update({
-    where: { id },
+const updateOrganization = async (id: string, userId: string, payload: any) => {
+  const result = await prisma.organization.updateMany({
+    where: { id, userId },
     data: payload,
   });
   return result;
 };
 
-const deleteOrganization = async (id: string) => {
-  const result = await prisma.organization.delete({
-    where: { id },
+const deleteOrganization = async (id: string, userId: string) => {
+  const result = await prisma.organization.deleteMany({
+    where: { id, userId },
+  });
+  return result;
+};
+
+const deleteAllOrganizations = async (userId: string) => {
+  const result = await prisma.organization.deleteMany({
+    where: { userId },
   });
   return result;
 };
@@ -52,4 +60,5 @@ export const organizationServices = {
   getSingleOrganization,
   updateOrganization,
   deleteOrganization,
+  deleteAllOrganizations,
 };

@@ -4,9 +4,17 @@ import { activityLogServices } from '../activityLog/activityLog.service';
 import { generateCvPdf } from "../../utils/pdfGenerator";
 import path from "path";
 import fs from "fs";
+import httpStatus from "http-status";
+import ApiError from "../../errors/ApiError";
 
 const createGeneratedCv = async (userId: string, qualityCheckId: string) => {
-  // 1. Check if a CV already exists for this qualityCheckId
+  // Validate UUID format before querying the database
+  const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+  if (!uuidRegex.test(qualityCheckId)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid id provided");
+  }
+
+  // 1. Check if a QualityCheck record exists
   const qualityCheck = await prisma.qualityCheck.findUnique({
     where: { id: qualityCheckId },
     include: {
@@ -15,7 +23,7 @@ const createGeneratedCv = async (userId: string, qualityCheckId: string) => {
   });
 
   if (!qualityCheck) {
-    throw new Error("QualityCheck record not found");
+    throw new ApiError(httpStatus.NOT_FOUND, "QualityCheck record not found");
   }
 
   const rawPdfUrl = qualityCheck.candidate?.rawPdfUrl;
@@ -113,10 +121,19 @@ const createGeneratedCv = async (userId: string, qualityCheckId: string) => {
       });
       cvId = newCv.id;
 
-      // Link this CV back to the QualityCheck
+      // Link this CV back to the QualityCheck and mark as AI generated
       await tx.qualityCheck.update({
         where: { id: qualityCheckId },
-        data: { cvId: cvId }
+        data: { cvId: cvId, aiGenerated: true }
+      });
+    }
+
+    // Always ensure QualityCheck is marked as aiGenerated if we reach this point in either branch
+    // but the logic above already covers linking. Let's make it consistent.
+    if (cvId) {
+      await tx.qualityCheck.update({
+        where: { id: qualityCheckId },
+        data: { aiGenerated: true }
       });
     }
 

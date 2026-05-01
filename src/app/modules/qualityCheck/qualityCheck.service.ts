@@ -75,6 +75,10 @@ const processAiResponse = async (aiResponse: any) => {
 
 
 const runQualityCheckWithRetry = async (batchId: string, rules?: any, attempt = 1) => {
+  if (attempt === 1) {
+    console.log(`[AI Check] Delaying 1st attempt by 5 seconds...`);
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+  }
   console.log(`[AI Check] Attempt ${attempt} starting...`);
   
   try {
@@ -138,10 +142,10 @@ const runQualityCheckWithRetry = async (batchId: string, rules?: any, attempt = 
     
     console.log(`[AI Check] Data not ready. Retrying in ${delay / 1000}s... (Attempt ${attempt + 1}/${maxAttempts})`);
 
-    setTimeout(() => runQualityCheckWithRetry(batchId, rules, attempt + 1), delay);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    return await runQualityCheckWithRetry(batchId, rules, attempt + 1);
   } else {
     console.error(`[AI Check] Failed to get AI data after ${maxAttempts} attempts.`);
-
   }
 };
 
@@ -168,7 +172,7 @@ const syncAllPendingChecks = async () => {
   }
 };
 
-const getAllQualityChecks = async (query: any) => {
+const getAllQualityChecks = async (query: any, isPublic: boolean = false) => {
   // Boolean conversion for qualityPass
   if (query.qualityPass !== undefined) {
     query.qualityPass = query.qualityPass === 'true' || query.qualityPass === true;
@@ -177,7 +181,7 @@ const getAllQualityChecks = async (query: any) => {
   const qualityCheckQuery = new QueryBuilder(query)
     .filter()
     .search(['fullResponse', { candidate: ['candidateName', 'emailAddress'] }])
-    .sort('createdAt')
+    .sort('-createdAt')
     .paginate()
     .build();
 
@@ -191,7 +195,7 @@ const getAllQualityChecks = async (query: any) => {
     orderBy: qualityCheckQuery.orderBy,
     skip: qualityCheckQuery.skip,
     take: qualityCheckQuery.take,
-    include: { candidate: true },
+    include: { candidate: true, cv: !isPublic },
   });
 
   const total = await prisma.qualityCheck.count({
@@ -209,10 +213,10 @@ const getAllQualityChecks = async (query: any) => {
   };
 };
 
-const getQualityCheckById = async (id: string) => {
+const getQualityCheckById = async (id: string, isPublic: boolean = false) => {
   const result = await prisma.qualityCheck.findUnique({
     where: { id, deletedAt: null },
-    include: { candidate: true },
+    include: { candidate: true, cv: !isPublic },
   });
   return result;
 };
@@ -220,23 +224,30 @@ const getQualityCheckById = async (id: string) => {
 
 const updateQualityCheck = async (id: string, payload: any) => {
   const result = await prisma.$transaction(async (tx) => {
-    const { candidate, ...qualityCheckData } = payload;
+    const { candidate, ...restPayload } = payload;
 
-    // Fields to protect from manual updates
+    const qualityCheckFields = ['score', 'qualityPass', 'availabilityStatus'];
+    const qualityCheckData: any = {};
+    const candidateUpdateData: any = { ...(candidate || {}) };
+
+    // Separate fields from the root payload
+    for (const key in restPayload) {
+      if (qualityCheckFields.includes(key)) {
+        qualityCheckData[key] = restPayload[key];
+      } else {
+        candidateUpdateData[key] = restPayload[key];
+      }
+    }
+
+    // Fields to protect from manual updates for QualityCheck
     const protectedFields = ['id', 'candidateId', 'cvId', 'createdAt', 'updatedAt', 'deletedAt', 'fullResponse'];
     protectedFields.forEach(field => delete qualityCheckData[field]);
 
-    // 1. Update QualityCheck
-    const updatedCheck = await tx.qualityCheck.update({
-      where: { id },
-      data: qualityCheckData,
-    });
-
-    // 2. Prepare Candidate Update
-    const candidateUpdateData = { ...(candidate || {}) };
-    
     // Ensure protected candidate fields are not overwritten
-    const protectedCandidateFields = ['id', 'createdAt', 'updatedAt', 'batchId'];
+    const protectedCandidateFields = [
+      'id', 'createdAt', 'updatedAt', 'batchId', 'candidateId', 
+      'cvId', 'fullResponse', 'uploadTime'
+    ];
     protectedCandidateFields.forEach(field => delete candidateUpdateData[field]);
 
     // Auto-sync status if passed in root
@@ -247,6 +258,21 @@ const updateQualityCheck = async (id: string, payload: any) => {
       candidateUpdateData.availabilityStatus = qualityCheckData.availabilityStatus;
     }
 
+    // 1. Update QualityCheck
+    let updatedCheck;
+    if (Object.keys(qualityCheckData).length > 0) {
+      updatedCheck = await tx.qualityCheck.update({
+        where: { id },
+        data: qualityCheckData,
+      });
+    } else {
+      updatedCheck = await tx.qualityCheck.findUnique({ where: { id } });
+      if (!updatedCheck) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Quality check not found");
+      }
+    }
+
+    // 2. Update Candidate
     if (Object.keys(candidateUpdateData).length > 0) {
       await tx.candidate.update({
         where: { id: updatedCheck.candidateId },
@@ -254,7 +280,11 @@ const updateQualityCheck = async (id: string, payload: any) => {
       });
     }
 
-    return updatedCheck;
+    // Return the updated check with candidate info
+    return await tx.qualityCheck.findUnique({
+      where: { id },
+      include: { candidate: true }
+    });
   });
   return result;
 };

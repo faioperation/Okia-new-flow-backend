@@ -16,6 +16,8 @@ model User {
   generatedEmails       GeneratedEmail[]
   sentEmailLogs         SentEmailLog[]
   activityLogs          ActivityLog[]
+  organizations         Organization[]
+  contacts              Contact[]
 }
 
 enum role {

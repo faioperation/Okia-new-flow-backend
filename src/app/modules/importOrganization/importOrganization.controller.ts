@@ -74,10 +74,37 @@ const deleteAllImports = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateImport = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+  const userId = (req as any).user.id;
+  const result = await importOrganizationServices.updateImport(id, userId, req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Imported organization updated successfully",
+    data: result,
+  });
+});
+
+const getFilters = catchAsync(async (req: Request, res: Response) => {
+  const userId = (req as any).user.id;
+  const result = await importOrganizationServices.getFilters(userId);
+  
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Organization filter values fetched successfully",
+    data: result,
+  });
+});
+
 export const importOrganizationControllers = {
   uploadExcelFiles,
   getAllImports,
+  getFilters,
   getImportById,
+  updateImport,
   deleteImport,
   deleteAllImports,
 };

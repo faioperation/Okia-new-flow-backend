@@ -283,7 +283,7 @@ const getAllImports = async (userId: string, query: any) => {
 };
 
 const getImportById = async (id: string, userId: string) => {
-  const result = await prisma.importedOrganization.findUnique({
+  const result = await prisma.importedOrganization.findFirst({
     where: { id, userId },
     include: {
       contacts: true,
@@ -314,8 +314,23 @@ const getImportById = async (id: string, userId: string) => {
   };
 };
 
+
+
+const updateImport = async (id: string, userId: string, data: any) => {
+  const { payload, ...rootFields } = data;
+
+  const result = await prisma.importedOrganization.updateMany({
+    where: { id, userId },
+    data: {
+      ...rootFields,
+      ...(payload && { payload: payload })
+    }
+  });
+  return result;
+};
+
 const deleteImport = async (id: string, userId: string) => {
-  const result = await prisma.importedOrganization.delete({
+  const result = await prisma.importedOrganization.deleteMany({
     where: { id, userId },
   });
   return result;
@@ -328,10 +343,46 @@ const deleteAllImports = async (userId: string) => {
   return result;
 };
 
+const getFilters = async (userId: string) => {
+  const importedOrgs = await prisma.importedOrganization.findMany({
+    where: { userId },
+    select: { payload: true, region: true }
+  });
+
+  const manualOrgs = await prisma.organization.findMany({
+    where: { userId },
+    select: { localAuthority: true, town: true }
+  });
+
+  const phases = new Set<string>();
+  const regions = new Set<string>();
+  const authorities = new Set<string>();
+
+  importedOrgs.forEach(org => {
+    const p = org.payload as any;
+    if (p?.Phase) phases.add(p.Phase);
+    if (org.region) regions.add(org.region);
+    if (p?.LocalAuthority) authorities.add(p.LocalAuthority);
+  });
+
+  manualOrgs.forEach(org => {
+    if (org.localAuthority) authorities.add(org.localAuthority);
+    if (org.town) regions.add(org.town);
+  });
+
+  return {
+    phases: Array.from(phases).sort(),
+    regions: Array.from(regions).sort(),
+    authorities: Array.from(authorities).sort()
+  };
+};
+
 export const importOrganizationServices = {
   processExcelFiles,
   getAllImports,
+  getFilters,
   getImportById,
+  updateImport,
   deleteImport,
   deleteAllImports,
 };

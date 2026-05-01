@@ -277,7 +277,7 @@ const getAllImports = async (userId: string, query: any) => {
 };
 
 const getImportById = async (id: string, userId: string) => {
-  const result = await prisma.importContact.findUnique({
+  const result = await prisma.importContact.findFirst({
     where: { id, userId },
     include: {
       importedOrganization: true
@@ -300,7 +300,7 @@ const getImportById = async (id: string, userId: string) => {
 };
 
 const deleteImport = async (id: string, userId: string) => {
-  const result = await prisma.importContact.delete({
+  const result = await prisma.importContact.deleteMany({
     where: { id, userId },
   });
   return result;
@@ -313,10 +313,66 @@ const deleteAllImports = async (userId: string) => {
   return result;
 };
 
+const updateImport = async (id: string, userId: string, data: any) => {
+  const { payload, ...rootFields } = data;
+
+  const result = await prisma.importContact.updateMany({
+    where: { id, userId },
+    data: {
+      ...rootFields,
+      ...(payload && { payload: payload })
+    }
+  });
+  return result;
+};
+
+const getFilters = async (userId: string) => {
+  const importedContacts = await prisma.importContact.findMany({
+    where: { userId },
+    select: { payload: true, localAuthority: true, importedOrganization: { select: { region: true } } }
+  });
+
+  const manualContacts = await prisma.contact.findMany({
+    where: { userId },
+    select: { jobTitle: true, gender: true, organization: { select: { localAuthority: true } } }
+  });
+
+  const jobs = new Set<string>();
+  const phases = new Set<string>();
+  const regions = new Set<string>();
+  const genders = new Set<string>();
+  const authorities = new Set<string>();
+
+  importedContacts.forEach(c => {
+    const p = c.payload as any;
+    if (p?.JobTitle) jobs.add(p.JobTitle);
+    if (p?.Phase) phases.add(p.Phase);
+    if (p?.Gender) genders.add(p.Gender);
+    if (c.localAuthority) authorities.add(c.localAuthority);
+    if (c.importedOrganization?.region) regions.add(c.importedOrganization.region);
+  });
+
+  manualContacts.forEach(c => {
+    if (c.jobTitle) jobs.add(c.jobTitle);
+    if (c.gender) genders.add(c.gender);
+    if (c.organization?.localAuthority) authorities.add(c.organization.localAuthority);
+  });
+
+  return {
+    jobs: Array.from(jobs).sort(),
+    phases: Array.from(phases).sort(),
+    regions: Array.from(regions).sort(),
+    genders: Array.from(genders).sort(),
+    authorities: Array.from(authorities).sort()
+  };
+};
+
 export const importContactServices = {
   processExcelFiles,
   getAllImports,
+  getFilters,
   getImportById,
+  updateImport,
   deleteImport,
   deleteAllImports,
 };

@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express"
+import { prisma } from "../db_connection";
 
 import ApiError from "../errors/ApiError";
 import httpStatus from "http-status"
@@ -16,9 +17,18 @@ const auth = (...roles: string[]) => {
 
             const verifyUser = verifyToken(token, config.JWT_ACCESS_TOKEN as string);
 
+            // Verify user exists in database to prevent dangling tokens/foreign key errors
+            const user = await prisma.user.findUnique({
+                where: { id: verifyUser.id }
+            });
+
+            if (!user) {
+                throw new ApiError(httpStatus.UNAUTHORIZED, "User not found or session invalid")
+            }
+
             req.user = verifyUser;
 
-            if (verifyUser.isBlocked) {
+            if (user.isBlocked) {
                 throw new ApiError(httpStatus.UNAUTHORIZED, "Your account has been blocked!")
             }
 

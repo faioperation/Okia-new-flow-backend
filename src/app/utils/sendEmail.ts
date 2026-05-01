@@ -1,17 +1,9 @@
-import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
 import config from "../config";
 import path from "path";
 import ejs from "ejs";
 
-const transporter = nodemailer.createTransport({
-  host: config.EMAIL_HOST,
-  port: Number(config.EMAIL_PORT),
-  secure: false,
-  auth: {
-    user: config.EMAIL_USER,
-    pass: config.EMAIL_PASSWORD,
-  },
-});
+sgMail.setApiKey(config.SENDGRID_API_KEY as string);
 
 type TSendEmail = {
   to: string;
@@ -35,18 +27,31 @@ export const sendEmail = async ({
   try {
     const tempPath = path.join(__dirname, `templates/${tempName}.ejs`);
     const html = await ejs.renderFile(tempPath, tempData);
-    const info = await transporter.sendMail({
-      to: to,
-      subject: subject,
-      html: html,
+
+    const msg = {
+      to,
+      from: {
+        email: config.SENDGRID_FROM_EMAIL as string,
+        name: config.SENDGRID_FROM_NAME as string,
+      },
+      replyTo: config.SENDGRID_REPLY_TO_EMAIL as string,
+      subject,
+      html,
       attachments: attachments?.map((x) => ({
+        content: Buffer.isBuffer(x.content)
+          ? x.content.toString("base64")
+          : Buffer.from(x.content).toString("base64"),
         filename: x.fileName,
-        content: x.content,
-        contentType: x.contentType,
+        type: x.contentType,
+        disposition: "attachment",
       })),
-    });
-    console.log("Email Send Done", info.messageId);
-  } catch (err) {
-    console.log("Email Send Failed", err);
+    };
+
+    const info = await sgMail.send(msg);
+    console.log("Email Send Done via SendGrid", info[0].headers["x-message-id"]);
+    return info;
+  } catch (err: any) {
+    console.error("Email Send Failed via SendGrid", err.response?.body || err);
+    throw err;
   }
 };
