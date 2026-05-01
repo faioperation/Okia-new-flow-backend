@@ -88,9 +88,22 @@ const updateImport = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getFilters = catchAsync(async (req: Request, res: Response) => {
+  const userId = (req as any).user.id;
+  const result = await importContactServices.getFilters(userId);
+  
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Contact filter values fetched successfully",
+    data: result,
+  });
+});
+
 export const importContactControllers = {
   processExcelFiles,
   getAllImports,
+  getFilters,
   getImportById,
   updateImport,
   deleteImport,

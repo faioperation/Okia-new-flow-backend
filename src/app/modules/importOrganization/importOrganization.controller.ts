@@ -87,9 +87,22 @@ const updateImport = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getFilters = catchAsync(async (req: Request, res: Response) => {
+  const userId = (req as any).user.id;
+  const result = await importOrganizationServices.getFilters(userId);
+  
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Organization filter values fetched successfully",
+    data: result,
+  });
+});
+
 export const importOrganizationControllers = {
   uploadExcelFiles,
   getAllImports,
+  getFilters,
   getImportById,
   updateImport,
   deleteImport,

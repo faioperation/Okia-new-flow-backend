@@ -14,6 +14,7 @@ router.post(
 );
 
 // Fetch all uploaded information for the logged user
+router.get("/filters", auth("ADMIN"), importOrganizationControllers.getFilters);
 router.get('/all', auth('ADMIN'), importOrganizationControllers.getAllImports);
 router.get('/:id', auth('ADMIN'), importOrganizationControllers.getImportById);
 

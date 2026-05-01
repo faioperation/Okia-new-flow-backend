@@ -7,6 +7,7 @@ import fs from 'fs/promises';
 import config from "../../config";
 import { qualityCheckServices } from "../qualityCheck/qualityCheck.service";
 import { getCoordinates } from "../../utils/geocoder";
+import { sendEmail } from "../../utils/sendEmail";
 
 const processSingleCv = async (
   file: Express.Multer.File, 
@@ -172,7 +173,62 @@ const startBulkImport = async (files: Express.Multer.File[], rules: any, userId:
   console.log(`[Batch ${batch.id}] Starting AI Quality Check...`);
   await qualityCheckServices.runQualityCheckWithRetry(batch.id, rules);
 
+  // 4. Send Outreach Emails in background (don't await)
+  sendOutreachEmails(batch.id);
+
   return batch.id;
+};
+
+const sendOutreachEmails = async (batchId: string) => {
+  try {
+    console.log(`[Batch ${batchId}] Starting background outreach email sequence...`);
+    const candidates = await prisma.candidate.findMany({
+      where: { batchId },
+      select: { id: true, candidateName: true, emailAddress: true }
+    });
+
+    for (const cand of candidates) {
+      if (cand.emailAddress) {
+        const firstName = cand.candidateName.split(' ')[0] || "Candidate";
+        console.log(`[Email] outreach email is send sending to ${cand.emailAddress} (${firstName})...`);
+        
+        try {
+          await sendEmail({
+            to: cand.emailAddress,
+            subject: "Opportunity Check: Your availability for education roles",
+            tempName: "outreach",
+            tempData: { firstName }
+          });
+
+          await prisma.bulkOutreachLog.create({
+            data: {
+              batchId,
+              candidateId: cand.id,
+              email: cand.emailAddress,
+              status: "sent"
+            }
+          });
+          
+          console.log(`[Email] outreach email to ${cand.emailAddress} done.✅`);
+        } catch (error: any) {
+          await prisma.bulkOutreachLog.create({
+            data: {
+              batchId,
+              candidateId: cand.id,
+              email: cand.emailAddress,
+              status: "failed"
+            }
+          });
+          console.error(`[Email] outreach email to ${cand.emailAddress} failed.❌ Error: ${error.message}`);
+        }
+        
+        // Add a small delay to prevent SMTP socket closure
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+  } catch (error) {
+    console.error(`[Email] Background outreach sequence failed for batch ${batchId}`, error);
+  }
 };
 
 

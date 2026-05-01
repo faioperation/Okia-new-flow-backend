@@ -12,8 +12,7 @@ model BulkUploadBatch {
 
   candidates     Candidate[]
   failLogs       BulkUploadFailLog[]
-
-
+  outreachLogs   BulkOutreachLog[]
 
   @@map("bulk_upload_batches")
 }
@@ -30,4 +29,17 @@ model BulkUploadFailLog {
   batch BulkUploadBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
 
   @@map("bulk_upload_fail_logs")
+}
+
+model BulkOutreachLog {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  batchId     String   @map("batch_id") @db.Uuid
+  candidateId String   @map("candidate_id") @db.Uuid
+  email       String   @db.VarChar(255)
+  status      String   @default("sent") @db.VarChar(30)
+  sentAt      DateTime @default(now()) @map("sent_at")
+
+  batch BulkUploadBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@map("bulk_outreach_logs")
 }

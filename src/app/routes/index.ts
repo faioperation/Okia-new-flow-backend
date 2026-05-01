@@ -13,6 +13,7 @@ import { importContactRoutes } from "../modules/importContact/importContact.rout
 import { generatedEmailRoutes } from "../modules/generatedEmail/generatedEmail.routes";
 import { activityLogRoutes } from "../modules/activityLog/activityLog.routes";
 import { dashboardOverviewRoutes } from "../modules/dashboardOverview/dashboardOverview.routes";
+import { bulkOutreachLogRoutes } from "../modules/bulkOutreachLog/bulkOutreachLog.routes";
 
 export const rootRoute = Router()
 
@@ -72,6 +73,10 @@ const modelRoutes = [
     {
         path: "/dashboard-overview",
         element: dashboardOverviewRoutes
+    },
+    {
+        path: "/bulk-outreach-logs",
+        element: bulkOutreachLogRoutes
     }
 ]
 
