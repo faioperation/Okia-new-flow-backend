@@ -4,7 +4,8 @@ model GeneratedCV {
   expertise         Json?    
   professionalTitle String?  
   location          String
-  contactDetails    String
+  contactDetails    Json?
+
   skills            Json?
 
   userId            String

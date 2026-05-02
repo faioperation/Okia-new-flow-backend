@@ -90,12 +90,23 @@ export const generateCvPdf = async (cvData: any, outputStream: Writable) => {
 
   doc.moveDown(0.3);
 
-  // CONTACT
+  let contactStr = '';
+  if (cvData.contactDetails) {
+    if (typeof cvData.contactDetails === 'string') {
+      contactStr = cvData.contactDetails;
+    } else {
+      const email = cvData.contactDetails.email || '';
+      const phone = cvData.contactDetails.phone || '';
+      contactStr = [email, phone].filter(Boolean).join(' | ');
+    }
+  }
+
   doc
     .fontSize(10)
     .font('Helvetica')
     .fillColor(primaryColor)
-    .text(`Contact: ${cvData.contactDetails || ''}`, { align: 'center' });
+    .text(`Contact: ${contactStr}`, { align: 'center' });
+
 
   doc.moveDown(0.8);
 
