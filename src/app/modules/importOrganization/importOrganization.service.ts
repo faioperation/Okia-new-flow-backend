@@ -239,10 +239,17 @@ const getAllImports = async (userId: string, query: any) => {
     OrganizationName: org.name,
     LocalAuthority: org.localAuthority,
     Postcode: org.postcode,
+    URN: org.urn,
+    Town: org.town,
+    Phase: org.phase,
+    Gender: org.gender,
+    Street: org.street,
+    AddressLine1: org.address,
+    TelephoneNumber: org.phone,
     latitude: org.latitude ? parseFloat(org.latitude) : null,
     longitude: org.longitude ? parseFloat(org.longitude) : null,
-    region: null, // Organization table doesn't have region
-    district: org.town,
+    region: org.town, 
+    district: org.localAuthority,
     country: org.country,
     contactCount: org._count?.contacts || 0,
     isManual: true,
@@ -293,25 +300,73 @@ const getImportById = async (id: string, userId: string) => {
     }
   });
 
-  if (!result) return null;
+  if (result) {
+    const payload = result.payload as object;
+    return {
+      id: result.id,
+      ...payload,
+      latitude: result.latitude,
+      longitude: result.longitude,
+      region: result.region,
+      district: result.district,
+      country: result.country,
+      contactCount: (result as any)._count?.contacts || 0,
+      contacts: result.contacts.map(c => ({
+        id: c.id,
+        ...(c.payload as object),
+        createdAt: c.createdAt
+      })),
+      isManual: false,
+      createdAt: result.createdAt
+    };
+  }
 
-  const payload = result.payload as object;
-  return {
-    id: result.id,
-    ...payload,
-    latitude: result.latitude,
-    longitude: result.longitude,
-    region: result.region,
-    district: result.district,
-    country: result.country,
-    contactCount: (result as any)._count?.contacts || 0,
-    contacts: result.contacts.map(c => ({
-      id: c.id,
-      ...(c.payload as object),
-      createdAt: c.createdAt
-    })),
-    createdAt: result.createdAt
-  };
+  // If not found in imported, check manual organizations
+  const manualOrg = await prisma.organization.findFirst({
+    where: { id, userId },
+    include: {
+      contacts: true,
+      _count: {
+        select: { contacts: true }
+      }
+    }
+  });
+
+  if (manualOrg) {
+    return {
+      id: manualOrg.id,
+      OrganizationName: manualOrg.name,
+      LocalAuthority: manualOrg.localAuthority,
+      Postcode: manualOrg.postcode,
+      URN: manualOrg.urn,
+      Town: manualOrg.town,
+      Phase: manualOrg.phase,
+      Gender: manualOrg.gender,
+      Street: manualOrg.street,
+      AddressLine1: manualOrg.address,
+      TelephoneNumber: manualOrg.phone,
+      latitude: manualOrg.latitude ? parseFloat(manualOrg.latitude) : null,
+      longitude: manualOrg.longitude ? parseFloat(manualOrg.longitude) : null,
+      region: manualOrg.town,
+      district: manualOrg.localAuthority,
+      country: manualOrg.country,
+      contactCount: manualOrg._count?.contacts || 0,
+      contacts: manualOrg.contacts.map(c => ({
+        id: c.id,
+        fullName: c.fullName,
+        email: c.email,
+        phone: c.phone,
+        jobTitle: c.jobTitle,
+        department: c.department,
+        gender: c.gender,
+        createdAt: c.createdAt
+      })),
+      isManual: true,
+      createdAt: manualOrg.createdAt
+    };
+  }
+
+  return null;
 };
 
 

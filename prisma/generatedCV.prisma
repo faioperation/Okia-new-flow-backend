@@ -1,9 +1,11 @@
 model GeneratedCV {
   id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   firstName         String
-  professionalTitle String  
+  expertise         Json?    
+  professionalTitle String?  
   location          String
   contactDetails    String
+  skills            Json?
 
   userId            String
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)

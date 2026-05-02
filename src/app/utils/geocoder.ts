@@ -23,8 +23,10 @@ export const getCoordinates = async (address: string): Promise<{ lat: number; ln
       };
     }
     return null;
-  } catch (error) {
-    console.error('Geocoding error:', error);
+  } catch (error: any) {
+    if (error.response?.status !== 429) {
+      console.error('Geocoding error:', error.message);
+    }
     return null;
   }
 };

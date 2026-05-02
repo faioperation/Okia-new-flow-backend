@@ -57,9 +57,11 @@ const createGeneratedCv = async (userId: string, qualityCheckId: string) => {
         where: { id: cvId },
         data: {
           firstName: cvData.header.first_name,
-          professionalTitle: cvData.header.professional_title,
+          expertise: cvData.header.expertise,
+          professionalTitle: cvData.header.professional_title || null,
           location: cvData.header.location,
-          contactDetails: cvData.header.contact_details,
+          contactDetails: `${cvData.header.contact_details.email} / ${cvData.header.contact_details.phone}`,
+          skills: cvData.skills,
           profileTitle: cvData.professional_profile.title,
           profileContent: cvData.professional_profile.content,
           aiRaw: aiResponse,
@@ -95,9 +97,11 @@ const createGeneratedCv = async (userId: string, qualityCheckId: string) => {
         data: {
           userId,
           firstName: cvData.header.first_name,
-          professionalTitle: cvData.header.professional_title,
+          expertise: cvData.header.expertise,
+          professionalTitle: cvData.header.professional_title || null,
           location: cvData.header.location,
-          contactDetails: cvData.header.contact_details,
+          contactDetails: `${cvData.header.contact_details.email} / ${cvData.header.contact_details.phone}`,
+          skills: cvData.skills,
           profileTitle: cvData.professional_profile.title,
           profileContent: cvData.professional_profile.content,
           logo: "https://i.ibb.co.com/CsTwmrMG/Edukai-Logox.png",
@@ -182,28 +186,44 @@ const getGeneratedCvById = async (id: string) => {
 };
 
 const updateGeneratedCv = async (id: string, data: any) => {
-  const { jobs, educations, ...cvData } = data;
+  // Strip out system fields to avoid Prisma validation errors
+  const { 
+    id: _id, 
+    userId: _userId, 
+    createdAt: _createdAt, 
+    updatedAt: _updatedAt, 
+    jobs, 
+    educations, 
+    qualityCheck,
+    ...cvData 
+  } = data;
 
   const result = await prisma.$transaction(async (tx) => {
     // Update main CV data
-    const updatedCv = await tx.generatedCV.update({
+    await tx.generatedCV.update({
       where: { id },
       data: cvData,
     });
 
-    // Handle Jobs (delete and recreate for simplicity in this CRUD, or update individually)
-    if (jobs) {
+    // Handle Jobs (delete and recreate)
+    if (jobs && Array.isArray(jobs)) {
       await tx.job.deleteMany({ where: { cvId: id } });
       await tx.job.createMany({
-        data: jobs.map((job: any) => ({ ...job, cvId: id }))
+        data: jobs.map((job: any) => {
+          const { id: jId, cvId: jCvId, ...jobData } = job;
+          return { ...jobData, cvId: id };
+        })
       });
     }
 
-    // Handle Educations
-    if (educations) {
+    // Handle Educations (delete and recreate)
+    if (educations && Array.isArray(educations)) {
       await tx.education.deleteMany({ where: { cvId: id } });
       await tx.education.createMany({
-        data: educations.map((edu: any) => ({ ...edu, cvId: id }))
+        data: educations.map((edu: any) => {
+          const { id: eId, cvId: eCvId, ...eduData } = edu;
+          return { ...eduData, cvId: id };
+        })
       });
     }
 

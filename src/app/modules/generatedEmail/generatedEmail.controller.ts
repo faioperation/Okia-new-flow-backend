@@ -25,7 +25,8 @@ const createGeneratedEmail = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllGeneratedEmails = catchAsync(async (req: Request, res: Response) => {
-  const result = await generatedEmailServices.getAllGeneratedEmails(req.query);
+  const userId = (req as any).user?.id;
+  const result = await generatedEmailServices.getAllGeneratedEmails(userId, req.query);
   
   sendResponse(res, {
     statusCode: httpStatus.OK,

@@ -72,19 +72,19 @@
                 </div>
             <% } %>
         </div>
-
+ <!-- Edukai Info Logo -->
+        <% if (typeof logoEKAI === 'string' && logoEKAI) { %>
+            <div style="text-align: center; padding-bottom: 20px;">
+                <img src="<%= logoEKAI %>" alt="Edukai Info" style="width: 100%; max-width: 100%;">
+            </div>
+        <% } %>
         <!-- Disclaimer Footer -->
         <div class="footer">
             <p style="font-size: 0.85em; margin-bottom: 10px;">Company registration number: 14337517 – Grove Resourcing Group Ltd t/a Edukai</p>
             <p>This message is for the designated recipient only and may contain privileged, proprietary or otherwise private information. If you have received it in error, please notify the sender immediately and delete the original. Any other use of this email by you is prohibited. This email (including attachments, if any) may contain confidential and/or legally privileged information. If you receive this email in error, please inform sender immediately and be aware that any unauthorized use or disclosure of this email or any of its contents is strictly prohibited. If you have received this in error, please notify us by forwarding this email to <a href="mailto:info@edukai.co.uk">info@edukai.co.uk</a> and then delete the email completely from your system. This email and any attachments have been scanned for computer viruses. However, it is the responsibility of the recipient to conduct its own security measures. No responsibility is accepted by Edukai for loss or damage arising from the receipt of this email and any attachments. No responsibility is accepted by Edukai for personal emails.</p>
         </div>
 
-        <!-- Edukai Info Logo -->
-        <% if (typeof logoEKAI === 'string' && logoEKAI) { %>
-            <div style="text-align: center; padding-bottom: 20px;">
-                <img src="<%= logoEKAI %>" alt="Edukai Info" style="width: 100%; max-width: 100%;">
-            </div>
-        <% } %>
+       
     </div>
 </body>
 </html>

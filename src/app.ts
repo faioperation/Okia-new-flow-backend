@@ -7,18 +7,38 @@ import cookieParser from "cookie-parser";
 import requestLogger from "./app/middlewares/requestLogger";
 
 const app: Application = express();
-app.use(express.json());
+
+// 1. MANUAL CORS FALLBACK (Absolute Priority)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  res.header("Access-Control-Allow-Origin", origin || "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, ngrok-skip-browser-warning, Accept, X-Requested-With");
+  res.header("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
+// 2. STANDARD CORS MIDDLEWARE
 app.use(
   cors({
-    origin: [
-      "https://test4.fireai.agency",
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "https://edukai-frontend-orcin.vercel.app",
-    ],
+    origin: true,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "ngrok-skip-browser-warning",
+      "Accept",
+      "X-Requested-With",
+    ],
   })
 );
+
+app.use(express.json());
 app.use(cookieParser());
 app.use(requestLogger);
 app.use("/uploads", express.static("uploads"));

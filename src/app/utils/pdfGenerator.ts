@@ -64,11 +64,28 @@ export const generateCvPdf = async (cvData: any, outputStream: Writable) => {
     .fillColor(secondaryColor)
     .text(cvData.professionalTitle || '', { align: 'center' });
 
+  doc.moveDown(0.2);
+
+  // EXPERTISE
+  if (cvData.expertise) {
+    const expertiseItems = Array.isArray(cvData.expertise) ? cvData.expertise : [];
+    if (expertiseItems.length > 0) {
+      doc
+        .fontSize(10)
+        .font('Helvetica')
+        .fillColor(primaryColor)
+        .text(expertiseItems.join(' | '), { align: 'center' });
+      doc.moveDown(0.3);
+    }
+  }
+
   doc.moveDown(0.3);
 
   // LOCATION
   doc
     .fontSize(10)
+    .font('Helvetica')
+    .fillColor(primaryColor)
     .text(`Location: ${cvData.location || ''}`, { align: 'center' });
 
   doc.moveDown(0.3);
@@ -76,6 +93,8 @@ export const generateCvPdf = async (cvData: any, outputStream: Writable) => {
   // CONTACT
   doc
     .fontSize(10)
+    .font('Helvetica')
+    .fillColor(primaryColor)
     .text(`Contact: ${cvData.contactDetails || ''}`, { align: 'center' });
 
   doc.moveDown(0.8);
@@ -126,6 +145,29 @@ export const generateCvPdf = async (cvData: any, outputStream: Writable) => {
       });
 
     doc.moveDown(1);
+  }
+
+  // ---------------- SKILLS ----------------
+
+  if (cvData.skills) {
+    const skills = typeof cvData.skills === 'string' ? JSON.parse(cvData.skills) : cvData.skills;
+    const title = skills.title || 'Skills';
+    const items = skills.items || [];
+
+    if (items.length > 0) {
+      drawSectionHeader(title);
+
+      doc
+        .fontSize(10.5)
+        .font('Helvetica')
+        .fillColor(secondaryColor)
+        .text(items.join(', '), {
+          align: 'justify',
+          lineGap: 4,
+        });
+
+      doc.moveDown(1);
+    }
   }
 
   // ---------------- EMPLOYMENT ----------------
@@ -221,22 +263,6 @@ export const generateCvPdf = async (cvData: any, outputStream: Writable) => {
     });
 
     doc.moveDown(1);
-  }
-
-  // ---------------- INTERESTS ----------------
-
-  if (cvData.interests || cvData.skills) {
-    drawSectionHeader('Interests');
-
-    doc
-      .fontSize(10.5)
-      .font('Helvetica')
-      .fillColor(secondaryColor)
-      .text(cvData.interests || cvData.skills || '', {
-        lineGap: 3,
-      });
-
-    doc.moveDown(1.5);
   }
 
   // ---------------- FOOTER ----------------
