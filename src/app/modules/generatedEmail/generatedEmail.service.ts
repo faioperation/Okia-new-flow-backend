@@ -81,7 +81,7 @@ const createGeneratedEmail = async (userId: string, generatedCvId: string, conta
   return result;
 };
 
-const getAllGeneratedEmails = async (query: any) => {
+const getAllGeneratedEmails = async (userId: string, query: any) => {
   const generatedEmailQuery = new QueryBuilder(query)
     .filter()
     .sort('createdAt')
@@ -90,6 +90,7 @@ const getAllGeneratedEmails = async (query: any) => {
 
   const whereCondition = {
     ...generatedEmailQuery.where,
+    userId,
     deletedAt: null
   };
 
@@ -100,7 +101,6 @@ const getAllGeneratedEmails = async (query: any) => {
     take: generatedEmailQuery.take,
     include: {
       generatedCv: true,
-      user: true
     }
   });
 

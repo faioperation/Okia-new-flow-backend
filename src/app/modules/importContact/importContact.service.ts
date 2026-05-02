@@ -97,7 +97,7 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
 };
 
 const getAllImports = async (userId: string, query: any) => {
-  const { searchTerm, localAuthority, region, gender, phase, page = 1, limit = 10, radius, generatedCvId } = query;
+  const { searchTerm, localAuthority, region, town, gender, phase, page = 1, limit = 10, radius, generatedCvId } = query;
 
   const skip = (Number(page) - 1) * Number(limit);
   const take = Number(limit);
@@ -159,6 +159,17 @@ const getAllImports = async (userId: string, query: any) => {
     });
   }
 
+  if (town) {
+    andConditions.push({
+      importedOrganization: {
+        payload: {
+          path: ['Town'],
+          string_contains: town,
+        },
+      },
+    });
+  }
+
   if (andConditions.length > 0) {
     where.AND = andConditions;
   }
@@ -183,11 +194,63 @@ const getAllImports = async (userId: string, query: any) => {
     // Pagination will be handled in memory for merging
   });
 
-  // Fetch manual contacts
-  const manualContacts = await prisma.contact.findMany({
-    where: searchTerm ? {
+  // Fetch manual contacts with filters
+  const manualWhere: any = { userId };
+  const manualAndConditions: any[] = [];
+
+  if (searchTerm) {
+    manualAndConditions.push({
       fullName: { contains: searchTerm, mode: 'insensitive' }
-    } : {},
+    });
+  }
+
+  if (localAuthority) {
+    manualAndConditions.push({
+      organization: {
+        localAuthority: { contains: localAuthority, mode: 'insensitive' }
+      }
+    });
+  }
+
+  if (gender) {
+    manualAndConditions.push({
+      OR: [
+        { gender: { contains: gender, mode: 'insensitive' } },
+        { organization: { gender: { contains: gender, mode: 'insensitive' } } }
+      ]
+    });
+  }
+
+  if (phase) {
+    manualAndConditions.push({
+      organization: {
+        phase: { contains: phase, mode: 'insensitive' }
+      }
+    });
+  }
+
+  if (region) {
+    manualAndConditions.push({
+      organization: {
+        town: { contains: region, mode: 'insensitive' }
+      }
+    });
+  }
+
+  if (town) {
+    manualAndConditions.push({
+      organization: {
+        town: { contains: town, mode: 'insensitive' }
+      }
+    });
+  }
+
+  if (manualAndConditions.length > 0) {
+    manualWhere.AND = manualAndConditions;
+  }
+
+  const manualContacts = await prisma.contact.findMany({
+    where: manualWhere,
     include: {
       organization: true
     }
@@ -207,8 +270,20 @@ const getAllImports = async (userId: string, query: any) => {
     distance: null, // Distance filtering not implemented for manual yet
     organizationDetails: c.organization ? {
       OrganizationName: c.organization.name,
+      LocalAuthority: c.organization.localAuthority,
+      Postcode: c.organization.postcode,
+      URN: c.organization.urn,
+      Town: c.organization.town,
+      Phase: c.organization.phase,
+      Gender: c.organization.gender,
+      Street: c.organization.street,
+      AddressLine1: c.organization.address,
+      TelephoneNumber: c.organization.phone,
       latitude: c.organization.latitude ? parseFloat(c.organization.latitude) : null,
       longitude: c.organization.longitude ? parseFloat(c.organization.longitude) : null,
+      region: c.organization.town,
+      district: c.organization.localAuthority,
+      country: c.organization.country,
     } : null,
     createdAt: c.createdAt
   }));
@@ -284,19 +359,61 @@ const getImportById = async (id: string, userId: string) => {
     }
   });
 
-  if (!result) return null;
+  if (result) {
+    const payload = result.payload as object;
+    return {
+      id: result.id,
+      ...payload,
+      importedOrganization: result.importedOrganization ? {
+        ...(result.importedOrganization.payload as object),
+        latitude: result.importedOrganization.latitude,
+        longitude: result.importedOrganization.longitude,
+      } : null,
+      isManual: false,
+      createdAt: result.createdAt
+    };
+  }
 
-  const payload = result.payload as object;
-  return {
-    id: result.id,
-    ...payload,
-    importedOrganization: result.importedOrganization ? {
-      ...(result.importedOrganization.payload as object),
-      latitude: result.importedOrganization.latitude,
-      longitude: result.importedOrganization.longitude,
-    } : null,
-    createdAt: result.createdAt
-  };
+  // If not found in imported, check manual contacts
+  const manualContact = await prisma.contact.findFirst({
+    where: { id, userId },
+    include: {
+      organization: true
+    }
+  });
+
+  if (manualContact) {
+    return {
+      id: manualContact.id,
+      FullName: manualContact.fullName,
+      WorkEmail: manualContact.email,
+      WorkPhone: manualContact.phone,
+      JobTitle: manualContact.jobTitle,
+      Department: manualContact.department,
+      Gender: manualContact.gender,
+      isManual: true,
+      organizationDetails: manualContact.organization ? {
+        OrganizationName: manualContact.organization.name,
+        LocalAuthority: manualContact.organization.localAuthority,
+        Postcode: manualContact.organization.postcode,
+        URN: manualContact.organization.urn,
+        Town: manualContact.organization.town,
+        Phase: manualContact.organization.phase,
+        Gender: manualContact.organization.gender,
+        Street: manualContact.organization.street,
+        AddressLine1: manualContact.organization.address,
+        TelephoneNumber: manualContact.organization.phone,
+        latitude: manualContact.organization.latitude ? parseFloat(manualContact.organization.latitude) : null,
+        longitude: manualContact.organization.longitude ? parseFloat(manualContact.organization.longitude) : null,
+        region: manualContact.organization.town,
+        district: manualContact.organization.localAuthority,
+        country: manualContact.organization.country,
+      } : null,
+      createdAt: manualContact.createdAt
+    };
+  }
+
+  return null;
 };
 
 const deleteImport = async (id: string, userId: string) => {
@@ -329,12 +446,32 @@ const updateImport = async (id: string, userId: string, data: any) => {
 const getFilters = async (userId: string) => {
   const importedContacts = await prisma.importContact.findMany({
     where: { userId },
-    select: { payload: true, localAuthority: true, importedOrganization: { select: { region: true } } }
+    select: { 
+      payload: true, 
+      localAuthority: true, 
+      importedOrganization: { 
+        select: { 
+          region: true, 
+          payload: true 
+        } 
+      } 
+    }
   });
 
   const manualContacts = await prisma.contact.findMany({
     where: { userId },
-    select: { jobTitle: true, gender: true, organization: { select: { localAuthority: true } } }
+    select: { 
+      jobTitle: true, 
+      gender: true, 
+      organization: { 
+        select: { 
+          localAuthority: true,
+          phase: true,
+          town: true,
+          gender: true
+        } 
+      } 
+    }
   });
 
   const jobs = new Set<string>();
@@ -342,20 +479,47 @@ const getFilters = async (userId: string) => {
   const regions = new Set<string>();
   const genders = new Set<string>();
   const authorities = new Set<string>();
+  const towns = new Set<string>();
 
   importedContacts.forEach(c => {
     const p = c.payload as any;
+    const orgP = c.importedOrganization?.payload as any;
+
     if (p?.JobTitle) jobs.add(p.JobTitle);
-    if (p?.Phase) phases.add(p.Phase);
-    if (p?.Gender) genders.add(p.Gender);
-    if (c.localAuthority) authorities.add(c.localAuthority);
-    if (c.importedOrganization?.region) regions.add(c.importedOrganization.region);
+    
+    const phase = p?.Phase || orgP?.Phase;
+    if (phase) phases.add(phase);
+    
+    const gender = p?.Gender || orgP?.Gender;
+    if (gender) genders.add(gender);
+    
+    const authority = c.localAuthority || p?.LocalAuthority || orgP?.LocalAuthority;
+    if (authority) authorities.add(authority);
+    
+    const region = c.importedOrganization?.region || orgP?.region;
+    if (region) regions.add(region);
+
+    const town = orgP?.Town || orgP?.town;
+    if (town) towns.add(town);
   });
 
   manualContacts.forEach(c => {
     if (c.jobTitle) jobs.add(c.jobTitle);
-    if (c.gender) genders.add(c.gender);
-    if (c.organization?.localAuthority) authorities.add(c.organization.localAuthority);
+    
+    const gender = c.gender || c.organization?.gender;
+    if (gender) genders.add(gender);
+
+    const phase = c.organization?.phase;
+    if (phase) phases.add(phase);
+
+    const authority = c.organization?.localAuthority;
+    if (authority) authorities.add(authority);
+
+    const region = c.organization?.town; // In some models town is used as region
+    if (region) regions.add(region);
+
+    const town = c.organization?.town;
+    if (town) towns.add(town);
   });
 
   return {
@@ -363,7 +527,8 @@ const getFilters = async (userId: string) => {
     phases: Array.from(phases).sort(),
     regions: Array.from(regions).sort(),
     genders: Array.from(genders).sort(),
-    authorities: Array.from(authorities).sort()
+    authorities: Array.from(authorities).sort(),
+    towns: Array.from(towns).sort()
   };
 };
 
