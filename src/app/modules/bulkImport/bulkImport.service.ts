@@ -156,6 +156,7 @@ const startBulkImport = async (files: Express.Multer.File[], rules: any, userId:
   });
 
   // 1. Wait for all CV extractions to complete
+  console.log(`[Batch ${batch.id}] Waiting for all CV extractions to finish in queue...`);
   await Promise.all(processingPromises);
 
   // 2. Mark Batch as completed in terms of extraction
@@ -167,11 +168,17 @@ const startBulkImport = async (files: Express.Multer.File[], rules: any, userId:
     }
   });
 
-  console.log(`[Batch ${batch.id}] CV EXTRACTION FINISHED. Results:- Passed: ${updatedBatch.completedFiles}, Failed: ${updatedBatch.failedFiles}`);
+  console.log(`[Batch ${batch.id}] EXTRACTION FINISHED. Results:- Passed: ${updatedBatch.completedFiles}, Failed: ${updatedBatch.failedFiles}`);
 
   // 3. Trigger AI Quality Check and WAIT for it to finish
-  console.log(`[Batch ${batch.id}] Starting AI Quality Check...`);
+  console.log(`[Batch ${batch.id}] NOW STARTING AI Quality Check (Waiting for AI)...`);
   const qualityResults = await qualityCheckServices.runQualityCheckWithRetry(batch.id, rules);
+  
+  if (qualityResults) {
+    console.log(`[Batch ${batch.id}] AI Quality Check COMPLETED with ${qualityResults.length} results.`);
+  } else {
+    console.log(`[Batch ${batch.id}] AI Quality Check FINISHED but returned no data.`);
+  }
 
   // 4. Send Outreach Emails in background (don't await)
   sendOutreachEmails(batch.id);
