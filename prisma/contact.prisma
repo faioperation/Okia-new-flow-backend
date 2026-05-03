@@ -7,8 +7,11 @@ model Contact {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  organizationId String       @map("organization_id") @db.Uuid
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String?       @map("organization_id") @db.Uuid
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  importedOrganizationId String? @map("imported_organization_id") @db.Uuid
+  importedOrganization ImportedOrganization? @relation(fields: [importedOrganizationId], references: [id], onDelete: SetNull)
 
   fullName String @map("full_name") @db.VarChar(255)
 

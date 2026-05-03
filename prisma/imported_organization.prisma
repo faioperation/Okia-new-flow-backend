@@ -12,6 +12,7 @@ model ImportedOrganization {
 
   user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   contacts ImportContact[]
+  manualContacts Contact[]
 
   @@map("imported_organizations")
 }

@@ -30,6 +30,7 @@ model Organization {
   notes String?
 
   contacts Contact[]
+  importedContacts ImportContact[]
 
   @@index([name])
   @@index([town])

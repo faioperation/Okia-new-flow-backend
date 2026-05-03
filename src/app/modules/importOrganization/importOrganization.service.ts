@@ -294,8 +294,12 @@ const getImportById = async (id: string, userId: string) => {
     where: { id, userId },
     include: {
       contacts: true,
+      manualContacts: true,
       _count: {
-        select: { contacts: true }
+        select: { 
+          contacts: true,
+          manualContacts: true
+        }
       }
     }
   });
@@ -310,12 +314,25 @@ const getImportById = async (id: string, userId: string) => {
       region: result.region,
       district: result.district,
       country: result.country,
-      contactCount: (result as any)._count?.contacts || 0,
-      contacts: result.contacts.map(c => ({
-        id: c.id,
-        ...(c.payload as object),
-        createdAt: c.createdAt
-      })),
+      contactCount: ((result as any)._count?.contacts || 0) + ((result as any)._count?.manualContacts || 0),
+      contacts: [
+        ...result.contacts.map(c => ({
+          id: c.id,
+          ...(c.payload as object),
+          isManual: false,
+          createdAt: c.createdAt
+        })),
+        ...result.manualContacts.map(c => ({
+          id: c.id,
+          FullName: c.fullName,
+          WorkEmail: c.email,
+          WorkPhone: c.phone,
+          JobTitle: c.jobTitle,
+          Department: c.department,
+          isManual: true,
+          createdAt: c.createdAt
+        }))
+      ],
       isManual: false,
       createdAt: result.createdAt
     };
@@ -326,8 +343,12 @@ const getImportById = async (id: string, userId: string) => {
     where: { id, userId },
     include: {
       contacts: true,
+      importedContacts: true,
       _count: {
-        select: { contacts: true }
+        select: { 
+          contacts: true,
+          importedContacts: true
+        }
       }
     }
   });
@@ -350,17 +371,26 @@ const getImportById = async (id: string, userId: string) => {
       region: manualOrg.town,
       district: manualOrg.localAuthority,
       country: manualOrg.country,
-      contactCount: manualOrg._count?.contacts || 0,
-      contacts: manualOrg.contacts.map(c => ({
-        id: c.id,
-        fullName: c.fullName,
-        email: c.email,
-        phone: c.phone,
-        jobTitle: c.jobTitle,
-        department: c.department,
-        gender: c.gender,
-        createdAt: c.createdAt
-      })),
+      contactCount: (manualOrg._count?.contacts || 0) + ((manualOrg as any)._count?.importedContacts || 0),
+      contacts: [
+        ...manualOrg.contacts.map(c => ({
+          id: c.id,
+          fullName: c.fullName,
+          email: c.email,
+          phone: c.phone,
+          jobTitle: c.jobTitle,
+          department: c.department,
+          gender: c.gender,
+          isManual: true,
+          createdAt: c.createdAt
+        })),
+        ...(manualOrg as any).importedContacts.map((c: any) => ({
+          id: c.id,
+          ...(c.payload as object),
+          isManual: false,
+          createdAt: c.createdAt
+        }))
+      ],
       isManual: true,
       createdAt: manualOrg.createdAt
     };
@@ -372,23 +402,78 @@ const getImportById = async (id: string, userId: string) => {
 
 
 const updateImport = async (id: string, userId: string, data: any) => {
-  const { payload, ...rootFields } = data;
+  const getField = (obj: any, ...keys: string[]) => {
+    for (const key of keys) {
+      if (obj[key] !== undefined) return obj[key];
+    }
+    return undefined;
+  };
 
-  const result = await prisma.importedOrganization.updateMany({
+  const payload = data.payload;
+  const latitude = getField(data, 'latitude');
+  const longitude = getField(data, 'longitude');
+  const region = getField(data, 'region');
+  const district = getField(data, 'district');
+  const country = getField(data, 'country');
+
+  const knownKeys = ['payload', 'latitude', 'longitude', 'region', 'district', 'country', 'organizationDetails'];
+  const otherFields: any = {};
+  for (const key in data) {
+    if (!knownKeys.includes(key)) {
+      otherFields[key] = data[key];
+    }
+  }
+
+  const result1 = await prisma.importedOrganization.updateMany({
     where: { id, userId },
     data: {
-      ...rootFields,
-      ...(payload && { payload: payload })
+      ...(latitude && { latitude }),
+      ...(longitude && { longitude }),
+      ...(region && { region }),
+      ...(district && { district }),
+      ...(country && { country }),
+      payload: {
+        ...(payload || {}),
+        ...otherFields,
+        ...(data.organizationDetails && { organizationDetails: data.organizationDetails })
+      }
     }
   });
-  return result;
+
+  const p = { ...(payload || {}), ...otherFields, ...(data.organizationDetails || {}) };
+  const orgData = {
+    ...(getField(p, 'name', 'OrganizationName') && { name: getField(p, 'name', 'OrganizationName') }),
+    ...(getField(p, 'localAuthority', 'LocalAuthority') && { localAuthority: getField(p, 'localAuthority', 'LocalAuthority') }),
+    ...(getField(p, 'postcode', 'Postcode') && { postcode: getField(p, 'postcode', 'Postcode') }),
+    ...(getField(p, 'urn', 'URN') && { urn: String(getField(p, 'urn', 'URN')) }),
+    ...(getField(p, 'town', 'Town') && { town: getField(p, 'town', 'Town') }),
+    ...(getField(p, 'phase', 'Phase') && { phase: getField(p, 'phase', 'Phase') }),
+    ...(getField(p, 'gender', 'Gender') && { gender: getField(p, 'gender', 'Gender') }),
+    ...(getField(p, 'street', 'Street') && { street: getField(p, 'street', 'Street') }),
+    ...(getField(p, 'address', 'AddressLine1') && { address: getField(p, 'address', 'AddressLine1') }),
+    ...(getField(p, 'phone', 'TelephoneNumber') && { phone: String(getField(p, 'phone', 'TelephoneNumber')) }),
+    ...(getField(p, 'latitude') && { latitude: String(getField(p, 'latitude')) }),
+    ...(getField(p, 'longitude') && { longitude: String(getField(p, 'longitude')) }),
+  };
+
+  const result2 = await prisma.organization.updateMany({
+    where: { id, userId },
+    data: orgData
+  });
+
+  return { count: result1.count + result2.count };
 };
 
 const deleteImport = async (id: string, userId: string) => {
-  const result = await prisma.importedOrganization.deleteMany({
+  const result1 = await prisma.importedOrganization.deleteMany({
     where: { id, userId },
   });
-  return result;
+
+  const result2 = await prisma.organization.deleteMany({
+    where: { id, userId },
+  });
+
+  return { count: result1.count + result2.count };
 };
 
 const deleteAllImports = async (userId: string) => {

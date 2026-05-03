@@ -1,0 +1,3147 @@
+{
+  "info": {
+    "_postman_id": "e5bbabbd-a6e1-45aa-b9cb-1af708104e8d",
+    "name": "Edukai Backend API Local",
+    "description": "Postman Collection for Edukai Backend Authentication and API Settings",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51978843",
+    "_collection_link": "https://go.postman.co/collection/51978843-e5bbabbd-a6e1-45aa-b9cb-1af708104e8d?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "❇️ Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Kishor Mahmud\",\n  \"email\": \"kishor@gmail.com\",\n  \"password\": \"123456\",\n  \"contactNo\": \"01700000000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"kishor@gmail.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"kishor@gmail.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"kishor@gmail.com\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/verify-otp",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "verify-otp"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"kishor@gmail.com\",\n  \"newPassword\": \"newStrongPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/change-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "change-password"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🛑 Import Organizations",
+      "item": [
+        {
+          "name": "Import Organization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "uuid": "a1901a08-9937-48a2-bb0a-02f66c69fd90",
+                  "src": "/C:/Users/Morning Shift/Desktop/cv/Test Specipic Organization.xlsx"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/import-organization/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-organization",
+                "upload"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Organizations",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/import-organization/all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-organization",
+                "all"
+              ],
+              "query": [
+                {
+                  "key": "searchTerm",
+                  "value": "Edukai",
+                  "disabled": true
+                },
+                {
+                  "key": "region",
+                  "value": "London",
+                  "disabled": true
+                },
+                {
+                  "key": "gender",
+                  "value": "Male",
+                  "disabled": true
+                },
+                {
+                  "key": "phase",
+                  "value": "Primary",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "6",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "2",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "localAuthority",
+                  "value": "Barnet",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Organizations Filter",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/import-organization/filters",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-organization",
+                "filters"
+              ],
+              "query": [
+                {
+                  "key": "searchTerm",
+                  "value": "Edukai",
+                  "disabled": true
+                },
+                {
+                  "key": "gender",
+                  "value": "Male",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "6",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "2",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Organizations by id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/import-organization/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-organization",
+                ":id"
+              ],
+              "query": [
+                {
+                  "key": "searchTerm",
+                  "value": "Edukai",
+                  "disabled": true
+                },
+                {
+                  "key": "gender",
+                  "value": "Male",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "6",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "2",
+                  "type": "text",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "3b8ef70b-62c0-4e0d-81ad-f1315d4c5b4f"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Organizations by id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/import-organization/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-organization",
+                ":id"
+              ],
+              "query": [
+                {
+                  "key": "searchTerm",
+                  "value": "Edukai",
+                  "disabled": true
+                },
+                {
+                  "key": "gender",
+                  "value": "Male",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "6",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "2",
+                  "type": "text",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "3b8ef70b-62c0-4e0d-81ad-f1315d4c5b4f"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Organizations by id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/import-organization/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-organization",
+                ":id"
+              ],
+              "query": [
+                {
+                  "key": "searchTerm",
+                  "value": "Edukai",
+                  "disabled": true
+                },
+                {
+                  "key": "gender",
+                  "value": "Male",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "6",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "2",
+                  "type": "text",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "3b8ef70b-62c0-4e0d-81ad-f1315d4c5b4f"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE ALL ( dont use this )",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/import-organization/delete-all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-organization",
+                "delete-all"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🛑 Import Contact",
+      "item": [
+        {
+          "name": "Import",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "uuid": "a1901a08-9937-48a2-bb0a-02f66c69fd90",
+                  "src": "/C:/Users/Morning Shift/Desktop/cv/Test Specipic Contact.xlsx"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/import-contact/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-contact",
+                "upload"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/import-contact/all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-contact",
+                "all"
+              ],
+              "query": [
+                {
+                  "key": "radius",
+                  "value": "1000",
+                  "disabled": true
+                },
+                {
+                  "key": "generatedCvId",
+                  "value": "de2e7abb-1e74-4b3d-a930-798e904be95d",
+                  "disabled": true
+                },
+                {
+                  "key": "searchTerm",
+                  "value": "Manor",
+                  "disabled": true
+                },
+                {
+                  "key": "localAuthority",
+                  "value": "Barking and Dagenham",
+                  "disabled": true
+                },
+                {
+                  "key": "gender",
+                  "value": "Essex",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "2",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true
+                },
+                {
+                  "key": "towns",
+                  "value": "Barking",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "region",
+                  "value": "London",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Filter5",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/import-contact/filters",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-contact",
+                "filters"
+              ],
+              "query": [
+                {
+                  "key": "searchTerm",
+                  "value": "Manor",
+                  "disabled": true
+                },
+                {
+                  "key": "localAuthority",
+                  "value": "Barking and Dagenham",
+                  "disabled": true
+                },
+                {
+                  "key": "region",
+                  "value": "London",
+                  "disabled": true
+                },
+                {
+                  "key": "gender",
+                  "value": "Essex",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "2",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET by id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/import-contact/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-contact",
+                ":id"
+              ],
+              "query": [
+                {
+                  "key": "searchTerm",
+                  "value": "Manor",
+                  "disabled": true
+                },
+                {
+                  "key": "gender",
+                  "value": "Essex",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "2",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "71559c63-1568-458f-97b7-96a4d756f248"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update by id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/import-contact/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-contact",
+                ":id"
+              ],
+              "query": [
+                {
+                  "key": "searchTerm",
+                  "value": "Manor",
+                  "disabled": true
+                },
+                {
+                  "key": "gender",
+                  "value": "Essex",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "2",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "71559c63-1568-458f-97b7-96a4d756f248"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/import-contact/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-contact",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "8c4bfb51-f98c-413a-80e7-88a3de5e2cb8"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE ALL( dont use this )",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/import-contact/delete-all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "import-contact",
+                "delete-all"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "✅Bulk Import",
+      "item": [
+        {
+          "name": "Bulk CV Upload",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": "/C:/Users/Morning Shift/Desktop/cv/Kanij Fatema Mahi.pdf"
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Git & Version Control\", \"JavaScript\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text"
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "0",
+                  "type": "text",
+                  "uuid": "17735e03-0650-4edb-9441-3cf75b3d2912"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/bulk-import/cv",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bulk-import",
+                "cv"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Json CV",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text"
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/bulk-import/all-candidates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bulk-import",
+                "all-candidates"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get single cv with json",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text"
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/bulk-import/candidate/26529458-d34f-4ee8-b2b1-1cb24b57c2d8",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bulk-import",
+                "candidate",
+                "26529458-d34f-4ee8-b2b1-1cb24b57c2d8"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk CV Upload Copy",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text"
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/bulk-import/batches",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bulk-import",
+                "batches"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk CV Upload  Single",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text"
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/bulk-import/batch/0687a3d6-cf6c-4657-90eb-84cc3827cdf1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bulk-import",
+                "batch",
+                "0687a3d6-cf6c-4657-90eb-84cc3827cdf1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "❇️Quality Pass CV JSON",
+      "item": [
+        {
+          "name": "GET",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quality-checks/all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "quality-checks",
+                "all"
+              ],
+              "query": [
+                {
+                  "key": "qualityPass",
+                  "value": "false",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Single",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text"
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/quality-checks/:qualityPassId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "quality-checks",
+                ":qualityPassId"
+              ],
+              "variable": [
+                {
+                  "key": "qualityPassId",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": " {\r\n            \"score\": 40,\r\n            \"qualityPass\": true,\r\n            \"availabilityStatus\": \"available\",\r\n            \"candidate\": {\r\n                \"candidateName\": \"Ahanaf Mubasshir\",\r\n                \"surname\": null,\r\n                \"emailAddress\": \"karena45@yahoo.com\",\r\n                \"contactNumber\": \"07961 737 240\",\r\n                \"jobTitle\": \"Leads.\",\r\n                \"address\": \"null\",\r\n                \"latitude\": 40.7841227,\r\n                \"longitude\": 35.0241142,\r\n                \"availabilityStatus\": \"available\",\r\n                \"qualityStatus\": \"failed\",\r\n                \"aiCheck\": true,\r\n                \"experienceYears\": \"0\",\r\n                \"professionalProfile\": \"Karen Asamoah Data Analyst (Mobile) 07961 737 240 Email: karena45@yahoo.com OVERVIEW: A self-driven individual, with experience of Systems Development, Data Modelling, Data Analysis and Visualisation. Strong in databases, Power BI, SQL with Project Management and delivery experience. I have a broad knowledge of Excel, ACCESS, Data Warehousing, Systems Development tools, testing, planning and implementation with efficiency and reliability initiatives. I am looking for a middle level role in Data Analysis and Modelling. I have DAX experience and decent programming background from my experience in Computing Information Systems. Recognised as determined, ambitious, team player, energetic and out-going with high levels of versatility, enthusiasm, and drive.\",\r\n                \"interests\": null,\r\n                \"rawExtractedText\": \"Karen Asamoah Data Analyst\\n(Mobile) 07961 737 240 Email: karena45@yahoo.com\\nOVERVIEW:\\nA self-driven individual, with experience of Systems Development, Data Modelling, Data Analysis and\\nVisualisation. Strong in databases, Power BI, SQL with Project Management and delivery experience. I\\nhave a broad knowledge of Excel, ACCESS, Data Warehousing, Systems Development tools, testing,\\nplanning and implementation with efficiency and reliability initiatives. I am looking for a middle level role in\\nData Analysis and Modelling. I have DAX experience and decent programming background from my\\nexperience in Computing Information Systems. Recognised as determined, ambitious, team player,\\nenergetic and out-going with high levels of versatility, enthusiasm, and drive.\\nSKILLS SUMMARY:\\nTechnical Skills\\n Data Modelling: Power BI DAX\\n SQL\\n Microsoft Excel\\n Microsoft Access\\n Programming, UML, Use Cases\\n Applications Development: Developing and managing database systems: Oracle 9i,\\n Object Oriented Analysis & Design\\n Software Applications: Oracle: forms, reports and financials,\\n Project Management\\n Software Testing\\n Active Server Scripting\\n Currently self-studying M and Python.\\nOther Skills\\n Business reporting and visualisation development\\n Team operations and management, recruitment\\n Excellent communication and negotiation skills at all levels\\n Customer service, dedicated to client satisfaction\\n Experienced in leading, training and motivating teams to reach full potential\\n Innovative with adaptive and confident manner\\n Self-motivated to deliver high standards with a flexible approach to work and learning\\nWORK EXPERIENCE:\\nJan 2012 to Date: Entrepreneur: Kumon Educational UK\\n I own a franchise, operating as an independent business director\\n Facilitate the development of young people and their talents\\n Network with other franchisees and business owners sharing best practice\\n I liaise with local schools and Local Educational Authorities\\n Spearheaded study groups for further development of children\\n Carried out recruitment and training initiatives for prospective franchisees\\n Management of business accounts to maximise profit\\n Generate regular business reports to Kumon stakeholders and maintaining compliance, including OFSTED\\n Advertising and branding- carry out local PR activities to promote business\\nSept 2019 to Date: MATHS TEACHER: Three Rivers Academy\\n Current Key Stage 3 Maths practitioner Lead – data analysis, reporting and intervention initiatives\\n Sixth form Academic Mentor for Year 13 – overseeing university applications and pastoral wellbeing\\n Mentor for graduate trainees and Early Career Teachers\\nMar 2009 to Jan 2012: PROJECT SPECIALIST: Research In Motion (BlackBerry)\\n\\n-- 1 of 3 --\\n\\n Ensured stakeholders received key information on projects; understood risks and issues, and planned\\nfor testing activities. Kept Stakeholders and Tester pages up to date with latest release and project\\ndata.\\n I identified, tracked and proactively mitigated issues and risks for the projects which included software,\\nhardware and accessory items. Reviewed risks and issues and mitigation plans regularly with Team\\nLeads.\\n I collaborated with Product and Program Management teams to understand key product features and\\ntarget markets to drive planning of the program including global tester selection, and feature focus.\\n Worked with Software Validation & Verification teams to understand test strategy and identify areas\\nwhere User Engagement could add value in gathering feedback on key product features that may not\\nhave had full coverage within the test plan.\\n Established Beta Project Plans which clearly articulated the deliverables of projects, and established\\ngoals for globalization which reflected the target markets for the release of products.\\n I created meaningful schedules of key milestones which aligned to the overall product schedule.\\nMaintained updates on project pages in betaSITE.\\n I created communications plans which outlined the focused features by device and codeline, and the\\nmethods planned to gather meaningful feedback for each to drive product improvements.\\n Defined, documented and communicated roles and responsibilities for team members using a\\nResponsibility Assignment Matrix (RACI).\\n I liaised with the Report Specialist and Team Leads, to establish realistic metrics as statistical reports\\nwhich measure the impact of the beta program and quality of the product. Created regular statistical\\nreports on issues and trends in projects.\\n Took global approach, embraced the involvement of global teams, global training, communications and\\nsupport.\\nSept 2008 to June 2009: PART- TIME LECTURER: Greenwich University, CMS Dept.\\n I supported the Principal Lecturer with student tutorials on postgraduate course COMP1430:\\nApplications Development\\n Assisted students with technical issues arising from lectures and coursework.\\n Invigilated and marked exam papers.\\nApr 2004 to March 2009: PROJECT COORDINATOR: AGA Foodservices Group\\n Liaised with head office liaison via business reporting tools\\n Acted as point-of-contact when escalation of technical issues was necessary\\n I was responsible for managing a team of project managers, design consultants and customer services\\nto consistently exceed sales targets\\n Co-ordinated projects; controlling budgets ensuring maximum profits were achieved\\n Accountable for all aspects of operations, customer communication, sales and stock management,\\n Organised local events to promote business awareness and increased revenue; managed trade events,\\nopen days and cookery demonstrations\\n Planned and scheduled staff rota’s; ensuring appropriate staffing to meet forecast\\nAug 2000 to Aug 2001: IT Intern: Ernst and Young, Ghana\\n Contributed to data gathering and needs analysis project for Government of Ghana, Millicom (GH) Ltd,\\nScancom (GH) Ltd, Westel, African Online and Internet Ghana\\n Liaised with other departments, divisions, organizations, and the clients on-site\\n Facilitated test design creations based on project requirements.\\n Provided 1st and 2nd line technical support and technical administration\\n Liaised with users to determine the exact nature of their issues and appropriate resolution\\n Provided one to one user training sessions on new desktops and applications software\\n Designed and implemented report-writing templates for general use and distribution\\nJuly 1997 to 1998 and Sept 1998 to Sept 1998: Engineering Intern, ECG, Ghana\\n Contributed to carrying out electrical maintenance works on circuit breakers at different stations in\\nAccra.\\n Liaised with supervisor in Protection and Control department.\\n\\n-- 2 of 3 --\\n\\n Partook in basic administrative chores.\\nEDUCATION & TRAINING:\\n 2021: POWER BI,\\n 2017: PGCE and QTS Qualification in Mathematics\\n 2007: PROJECT MANAGEMENT PRINCE2\\n 2005: MSc Computing Information Systems: Greenwich University\\nModules: Applications Development, Systems Development Management, Visual Programming-\\nASP.NET, XML, HTML, Java Programming, JavaScript, VBScript, VBA Programming and VB.NET, E-\\nCommerce, Distributed Information Systems - Oracle, SQL, Access, VBA, Systems Analysis,\\nDistributed Computer Systems- UNIX, Systems Architecture\\nProject and Dissertation: Design and Implementation of a Decision Support System for a medium-\\nsize company. I used MS Access and SQL for implementation.\\n 2000: BSc Electrical/Electronic Engineering (KNUST)\\n BSc Project: Energy saving for a timber company based in Kumasi.\\n 2005: Sales Techniques\\n 2004: HR Management, M.A.D. Training – AGA Customer Services and Sales Techniques\\n 1994: Secondary Education to ‘A’ level: Physics, Chemistry, Mathematics and General Studies\\nACHIEVEMENTS INCLUDE:\\n Project Management: high standards of user interaction, translating user requirement into technical\\nsolutions and providing non-technical explanations to obtain understanding.\\n Adaptable to new technologies, rapidly gaining understanding with full utilisation\\n Investigated issues within development and designed efficiency measures\\n Completed general coding maintenance; reviewing areas of code and making appropriate changes to\\nimprove application performance\\n Remains abreast with advances in technology and maintenance of IT related skills\\n Successfully doubled sales targets within first 12 months of working with Aga\\n Built sales and business opportunities maximising on technical knowledge and solutions\\n Experienced at working using own initiative, making decisions supporting manager\\n Understood and Identified customer needs; worked closely with the sales teams to ensure service\\nstandards\\nREFERENCES:\\n References: Available on request\\nKaren Asamoah\\n\\n-- 3 of 3 --\\n\\n\",\r\n                \"extractedJson\": {\r\n                    \"contact\": {\r\n                        \"email\": \"karena45@yahoo.com\",\r\n                        \"phone\": \"07961 737 240\",\r\n                        \"linkedin\": null,\r\n                        \"location\": \"null\"\r\n                    },\r\n                    \"education\": [\r\n                        {\r\n                            \"degree\": \" 2005: MSc Computing Information Systems: Greenwich University\",\r\n                            \"result\": null,\r\n                            \"institution\": \"Modules: Applications Development, Systems Development Management, Visual Programming-\",\r\n                            \"passing_year\": \"null\"\r\n                        },\r\n                        {\r\n                            \"degree\": \"ASP.NET, XML, HTML, Java Programming, JavaScript, VBScript, VBA Programming and VB.NET, E-\",\r\n                            \"result\": null,\r\n                            \"institution\": \"Commerce, Distributed Information Systems - Oracle, SQL, Access, VBA, Systems Analysis,\",\r\n                            \"passing_year\": \"null\"\r\n                        },\r\n                        {\r\n                            \"degree\": \" 2000: BSc Electrical/Electronic Engineering (KNUST)\",\r\n                            \"result\": null,\r\n                            \"institution\": \"Unknown Institution\",\r\n                            \"passing_year\": \"null\"\r\n                        },\r\n                        {\r\n                            \"degree\": \" BSc Project: Energy saving for a timber company based in Kumasi.\",\r\n                            \"result\": null,\r\n                            \"institution\": \"Unknown Institution\",\r\n                            \"passing_year\": \"1994\"\r\n                        }\r\n                    ],\r\n                    \"top_skills\": [\r\n                        \"JavaScript\",\r\n                        \"Python\",\r\n                        \"Java\",\r\n                        \"SQL\",\r\n                        \"HTML\"\r\n                    ],\r\n                    \"candidate_name\": \"Karen Asamoah Data Analyst Update📛\",\r\n                    \"employment_history\": [\r\n                        {\r\n                            \"period\": \"null\",\r\n                            \"company\": \" I collaborated with Product and Program Management teams to understand key product features and\",\r\n                            \"job_title\": \"Leads.\",\r\n                            \"responsibilities\": [\r\n                                \"target markets to drive planning of the program including global tester selection, and feature focus.\",\r\n                                \" Worked with Software Validation & Verification teams to understand test strategy and identify areas\",\r\n                                \"where User Engagement could add value in gathering feedback on key product features that may not\",\r\n                                \"have had full coverage within the test plan.\",\r\n                                \" Established Beta Project Plans which clearly articulated the deliverables of projects, and established\",\r\n                                \"goals for globalization which reflected the target markets for the release of products.\",\r\n                                \" I created meaningful schedules of key milestones which aligned to the overall product schedule.\",\r\n                                \"Maintained updates on project pages in betaSITE.\",\r\n                                \" I created communications plans which outlined the focused features by device and codeline, and the\",\r\n                                \"methods planned to gather meaningful feedback for each to drive product improvements.\",\r\n                                \" Defined, documented and communicated roles and responsibilities for team members using a\",\r\n                                \"Responsibility Assignment Matrix (RACI).\",\r\n                                \" I liaised with the Report Specialist and Team Leads, to establish realistic metrics as statistical reports\",\r\n                                \"which measure the impact of the beta program and quality of the product. Created regular statistical\",\r\n                                \"reports on issues and trends in projects.\",\r\n                                \" Took global approach, embraced the involvement of global teams, global training, communications and\",\r\n                                \"support.\",\r\n                                \"Sept 2008 to June 2009: PART- TIME LECTURER: Greenwich University, CMS Dept.\",\r\n                                \" I supported the Principal Lecturer with student tutorials on postgraduate course COMP1430:\",\r\n                                \"Applications Development\",\r\n                                \" Assisted students with technical issues arising from lectures and coursework.\",\r\n                                \" Invigilated and marked exam papers.\",\r\n                                \"Apr 2004 to March 2009: PROJECT COORDINATOR: AGA Foodservices Group\",\r\n                                \" Liaised with head office liaison via business reporting tools\",\r\n                                \" Acted as point-of-contact when escalation of technical issues was necessary\",\r\n                                \" I was responsible for managing a team of project managers, design consultants and customer services\",\r\n                                \"to consistently exceed sales targets\",\r\n                                \" Co-ordinated projects; controlling budgets ensuring maximum profits were achieved\",\r\n                                \" Accountable for all aspects of operations, customer communication, sales and stock management,\",\r\n                                \" Organised local events to promote business awareness and increased revenue; managed trade events,\",\r\n                                \"open days and cookery demonstrations\",\r\n                                \" Planned and scheduled staff rota’s; ensuring appropriate staffing to meet forecast\",\r\n                                \"Aug 2000 to Aug 2001: IT Intern: Ernst and Young, Ghana\",\r\n                                \" Contributed to data gathering and needs analysis project for Government of Ghana, Millicom (GH) Ltd,\",\r\n                                \"Scancom (GH) Ltd, Westel, African Online and Internet Ghana\",\r\n                                \" Liaised with other departments, divisions, organizations, and the clients on-site\",\r\n                                \" Facilitated test design creations based on project requirements.\",\r\n                                \" Provided 1st and 2nd line technical support and technical administration\",\r\n                                \" Liaised with users to determine the exact nature of their issues and appropriate resolution\",\r\n                                \" Provided one to one user training sessions on new desktops and applications software\",\r\n                                \" Designed and implemented report-writing templates for general use and distribution\",\r\n                                \"July 1997 to 1998 and Sept 1998 to Sept 1998: Engineering Intern, ECG, Ghana\",\r\n                                \" Contributed to carrying out electrical maintenance works on circuit breakers at different stations in\",\r\n                                \"Accra.\",\r\n                                \" Liaised with supervisor in Protection and Control department.\",\r\n                                \"-- 2 of 3 --\",\r\n                                \" Partook in basic administrative chores.\"\r\n                            ]\r\n                        }\r\n                    ],\r\n                    \"professional_summary\": \"Karen Asamoah Data Analyst (Mobile) 07961 737 240 Email: karena45@yahoo.com OVERVIEW: A self-driven individual, with experience of Systems Development, Data Modelling, Data Analysis and Visualisation. Strong in databases, Power BI, SQL with Project Management and delivery experience. I have a broad knowledge of Excel, ACCESS, Data Warehousing, Systems Development tools, testing, planning and implementation with efficiency and reliability initiatives. I am looking for a middle level role in Data Analysis and Modelling. I have DAX experience and decent programming background from my experience in Computing Information Systems. Recognised as determined, ambitious, team player, energetic and out-going with high levels of versatility, enthusiasm, and drive.\",\r\n                    \"total_years_experience\": 0,\r\n                    \"projects_and_certifications\": [\r\n                        \" Project Management: high standards of user interaction, translating user requirement into technical\",\r\n                        \"solutions and providing non-technical explanations to obtain understanding.\",\r\n                        \" Adaptable to new technologies, rapidly gaining understanding with full utilisation\",\r\n                        \" Investigated issues within development and designed efficiency measures\",\r\n                        \" Completed general coding maintenance; reviewing areas of code and making appropriate changes to\",\r\n                        \"improve application performance\",\r\n                        \" Remains abreast with advances in technology and maintenance of IT related skills\",\r\n                        \" Successfully doubled sales targets within first 12 months of working with Aga\",\r\n                        \" Built sales and business opportunities maximising on technical knowledge and solutions\",\r\n                        \" Experienced at working using own initiative, making decisions supporting manager\",\r\n                        \" Understood and Identified customer needs; worked closely with the sales teams to ensure service\",\r\n                        \"standards\",\r\n                        \" References: Available on request\",\r\n                        \"Karen Asamoah\",\r\n                        \"-- 3 of 3 --\"\r\n                    ]\r\n                },\r\n                \"profilePictureUrl\": null,\r\n                \"rawPdfPath\": \"/uploads/cv/1777548199753-642176942-aaExpirence.pdf\",\r\n                \"rawPdfUrl\": \"http://localhost:5000/uploads/cv/1777548199753-642176942-aaExpirence.pdf\",\r\n                \"batchId\": \"932c5fca-a914-4708-bb60-3339c3654f1d\"\r\n            }\r\n        }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/quality-checks/:qualityPassId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "quality-checks",
+                ":qualityPassId"
+              ],
+              "variable": [
+                {
+                  "key": "qualityPassId",
+                  "value": "112132bf-adec-4eaa-96a4-6adfa7fb8e8d"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE SINGLE",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text"
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/quality-checks/:qualityPassId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "quality-checks",
+                ":qualityPassId"
+              ],
+              "variable": [
+                {
+                  "key": "qualityPassId",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE ALL( dont use this )",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text"
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/quality-checks/delete-all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "quality-checks",
+                "delete-all"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📛Generated CV",
+      "item": [
+        {
+          "name": "Generate CV",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"qualityCheckId\" : \"25ead4de-e8a8-44d5-98ad-1b5836418064\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/generated-cv/create",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-cv",
+                "create"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET ALL",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence3.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence2.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence.pdf"
+                  ]
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/generated-cv/all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-cv",
+                "all"
+              ],
+              "query": [
+                {
+                  "key": "qualityPass",
+                  "value": "true",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Single",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence3.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence2.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence.pdf"
+                  ]
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/generated-cv/:cvId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-cv",
+                ":cvId"
+              ],
+              "variable": [
+                {
+                  "key": "cvId",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Copy",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n        \"firstName\": \"Ahanzz\",\r\n        \"expertise\": [\r\n            \"Software Developer (Self / Freelance)\"\r\n        ],\r\n        \"professionalTitle\": null,\r\n        \"location\": \"Dhaka, Bangladesh\",\r\n        \"contactDetails\": \"ahanaf.betopia@gmail.com / \",\r\n        \"skills\": {\r\n            \"items\": [\r\n                \"JavaScript (Node.js, Express.js)\",\r\n                \"API Development & Integration\",\r\n                \"Database Management (Prisma, SQL)\",\r\n                \"Problem Solving & Debugging\",\r\n                \"Git & Version Control\",\r\n                \"Basic Frontend (HTML, CSS)\"\r\n            ],\r\n            \"title\": \"Skills\"\r\n        },\r\n        \"userId\": \"d979a83e-2ce5-4955-92fb-2fbff819b818\",\r\n        \"profileTitle\": \"Professional Profile\",\r\n        \"profileContent\": \"Ahanaf is a motivated and detail-oriented professional with a deep interest in technology and problem-solving. With a passion for building efficient solutions, Ahanaf demonstrates a proactive approach to acquiring new skills and applying knowledge in dynamic environments. His dedication is towards enhancing educational technology solutions by developing solid backend architectures, ensuring the seamless integration of various systems.\",\r\n        \"image\": \"default.png\",\r\n        \"logo\": \"https://i.ibb.co.com/CsTwmrMG/Edukai-Logox.png\",\r\n        \"pdfUrl\": null,\r\n        \"pdfPath\": null,\r\n        \"rawPdfUrl\": \"https://accustomed-maryalice-bubbleless.ngrok-free.dev/uploads/cv/1777717987148-107201893-Ahanaf-Mubasshir.pdf\",\r\n        \"rawPdfPath\": \"/uploads/cv/1777717987148-107201893-Ahanaf-Mubasshir.pdf\",\r\n        \"createdAt\": \"2026-05-02T10:33:51.025Z\",\r\n        \"updatedAt\": \"2026-05-02T10:33:51.025Z\",\r\n        \"jobs\": [\r\n            {\r\n                \"id\": \"7e8cdd87-0de1-4aa1-80d6-fa7686d715cf\",\r\n                \"company\": \"Self / Freelance\",\r\n                \"role\": \"Software Developer (Self / Freelance)\",\r\n                \"period\": \"Present\",\r\n                \"responsibilities\": [\r\n                    \"Orchestrated the development of robust backend systems utilizing Node.js and Express.js for efficient data processing.\",\r\n                    \"Spearheaded the integration of comprehensive email services APIs, optimizing communication systems.\",\r\n                    \"Designed and implemented complex database schemas using Prisma ORM for relational data management.\",\r\n                    \"Created innovative location-based services to enhance user functionality by converting postcodes to geographical coordinates.\"\r\n                ],\r\n                \"cvId\": \"7a3fc602-0bde-4054-86d2-e7d02d71c546\"\r\n            }\r\n        ],\r\n        \"educations\": [\r\n            {\r\n                \"id\": \"a386ede6-8b99-4a80-9c3b-41cb060c1b35\",\r\n                \"title\": \"CSE\",\r\n                \"cvId\": \"7a3fc602-0bde-4054-86d2-e7d02d71c546\"\r\n            },\r\n            {\r\n                \"id\": \"80a748aa-e74c-4a5d-b257-a5d295a65182\",\r\n                \"title\": \"DIU, Dhaka, Bangladesh\",\r\n                \"cvId\": \"7a3fc602-0bde-4054-86d2-e7d02d71c546\"\r\n            }\r\n        ]\r\n    }\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/generated-cv/:cvId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-cv",
+                ":cvId"
+              ],
+              "variable": [
+                {
+                  "key": "cvId",
+                  "value": "7a3fc602-0bde-4054-86d2-e7d02d71c546"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Generate pdf by id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/generated-cv/generate-pdf/:cvId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-cv",
+                "generate-pdf",
+                ":cvId"
+              ],
+              "variable": [
+                {
+                  "key": "cvId",
+                  "value": "91c5b56e-df28-417b-a2c7-4aa12ee9cf60"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "download pdf by id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/generated-cv/download/:cvId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-cv",
+                "download",
+                ":cvId"
+              ],
+              "variable": [
+                {
+                  "key": "cvId",
+                  "value": "ffa72175-e147-410d-ba32-969ee6275b14"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence3.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence2.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence.pdf"
+                  ]
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/generated-cv/:cvId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-cv",
+                ":cvId"
+              ],
+              "variable": [
+                {
+                  "key": "cvId",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE ALL( dont use this )",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence3.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence2.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence.pdf"
+                  ]
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/generated-cv/delete-all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-cv",
+                "delete-all"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔰 Generated Email And Send Email",
+      "item": [
+        {
+          "name": "Generate",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"generatedCvId\" : \"de2e7abb-1e74-4b3d-a930-798e904be95d\",\r\n    \"contactIds\" : [\"e767a73f-064d-4d81-b87e-3dce9e16f74a\",\"c3e1c8e7-1c3b-49d4-931d-ec4c90c37207\"]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/generated-email/generate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-email",
+                "generate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send | Email",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/generated-email/send/:generatedEmail",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-email",
+                "send",
+                ":generatedEmail"
+              ],
+              "variable": [
+                {
+                  "key": "generatedEmail",
+                  "value": "a342024a-3723-4f4b-b9b7-3c38914857e0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get Email logs",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/generated-email/sent-logs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-email",
+                "sent-logs"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET ALL",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/generated-email/all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-email",
+                "all"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Single",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/generated-email/:emailId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-email",
+                ":emailId"
+              ],
+              "variable": [
+                {
+                  "key": "emailId",
+                  "value": "2af0ba10-9546-4388-88db-91e676dd3b41"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n        \"subject\": \"Transformative Backend Developer Ready to Enhance Your Team ✅\",\r\n        \"salutation\": \"Dear Hiring Manager,\",\r\n        \"introParagraph\": \"Introducing an ambitious and technically proficient Backend Developer with extensive experience in designing, developing, and deploying scalable web applications using Django...\",\r\n        \"keyHighlights\": [\r\n            {\r\n                \"icon\": \"✅\",\r\n                \"title\": \"Extensive Django Expertise\",\r\n                \"description\": \"Aungkhaishing has honed his skills as a Backend Developer Intern at Backend API, where he built and maintained scalable RESTful API services.\"\r\n            },\r\n            {\r\n                \"icon\": \"🎓\",\r\n                \"title\": \"Education/Project Delivery\",\r\n                \"description\": \"He holds a Higher Secondary Certificate from Ranguniya College, Chittagong, and completed practical studies in Python Django and Linux Fundamentals.\"\r\n            },\r\n            {\r\n                \"icon\": \"💡\",\r\n                \"title\": \"Technical Proficiency\",\r\n                \"description\": \"Proficient in Django, Django REST Framework, MySQL, and full-stack development with a focus on clean code, performance, and security.\"\r\n            },\r\n            {\r\n                \"icon\": \"🤝\",\r\n                \"title\": \"Soft Skills and Collaboration\",\r\n                \"description\": \"Demonstrated ability to collaborate with frontend teams to deliver seamless system integration and enhance overall functionality.\"\r\n            }\r\n        ],\r\n        \"impactStatement\": \"This candidate is set to make a significant impact in your technological endeavors by fostering efficient learning platforms.\",\r\n        \"closingStatement\": \"Best regards,\\nEdukai Recruitment Team\",\r\n        \"nbFooter\": \"NB. If you have another vacancy for another role, simply drop me an email with your requirement(s) and I will send you our best matched candidates. (this is a generic email so journey times to your school for your chosen candidate(s) would have to be explored before an interview/trial is arranged)\",\r\n        \"signatureBlock\": {\r\n            \"name\": \"Kai Smith\",\r\n            \"contact\": {\r\n                \"phone\": \"0203 987 9981\",\r\n                \"mobile\": \"07542 870 343\",\r\n                \"address\": \"Unit A3, Broomleigh Business Park, Worsley Bridge Rd, London, SE26 5BN\",\r\n                \"website\": \"www.edukai.co.uk\"\r\n            },\r\n            \"designation\": \"Director, Edukai Recruitment\"\r\n        }\r\n       \r\n    }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/generated-email/:emailId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-email",
+                ":emailId"
+              ],
+              "variable": [
+                {
+                  "key": "emailId",
+                  "value": "381912ae-1469-4865-8959-961686c4fbe7"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence3.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence2.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence.pdf"
+                  ]
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/generated-email/:emailId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generated-email",
+                ":emailId"
+              ],
+              "variable": [
+                {
+                  "key": "emailId",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔰 Activity Log",
+      "item": [
+        {
+          "name": "GET ALL",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/activity-logs/all",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "activity-logs",
+                "all"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🍊Dashboard Overview",
+      "item": [
+        {
+          "name": "GET ALL",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence3.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence2.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence.pdf"
+                  ]
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/dashboard-overview/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "dashboard-overview",
+                "stats"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🍊Bulk Email  Logs",
+      "item": [
+        {
+          "name": "GET ALL",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence3.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence2.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence.pdf"
+                  ]
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/bulk-outreach-logs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bulk-outreach-logs"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET Single",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence3.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence2.pdf",
+                    "/C:/Users/Morning Shift/Downloads/Backend/aaExpirence.pdf"
+                  ]
+                },
+                {
+                  "key": "minimumYearsExperience",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "requiredSkills",
+                  "value": "[\"Node.js\", \"React\"]",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "jobRole",
+                  "value": "Software Engineer",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "checkFormatting",
+                  "value": "true",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/bulk-outreach-logs/batch/:batchId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bulk-outreach-logs",
+                "batch",
+                ":batchId"
+              ],
+              "variable": [
+                {
+                  "key": "batchId",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Candidates",
+      "item": [
+        {
+          "name": "Create Candidate",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"candidateName\": \"John Doe\",\n  \"emailAddress\": \"john@example.com\",\n  \"contactNumber\": \"+1234567890\",\n  \"jobTitle\": \"Software Engineer\",\n  \"address\": \"123 Tech Lane, Silicon Valley\",\n  \"experienceYears\": 5.5,\n  \"professionalProfile\": \"Experienced dev with expertise in Node.js and React.\",\n  \"availabilityStatus\": \"available\",\n  \"qualityStatus\": \"verified\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/candidates/create-candidate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidates",
+                "create-candidate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Candidates",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/candidates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidates"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Candidate",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/candidates/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidates",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Candidate",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobTitle\": \"Senior Software Engineer\",\n  \"experienceYears\": 6.0\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/candidates/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidates",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Candidate",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/candidates/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "candidates",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Organizations",
+      "item": [
+        {
+          "name": "Create Organization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"OrganizationName\": \"Green Valley Academy\",\n    \"LocalAuthority\": \"Camden\",\n    \"Postcode\": \"NW1 8XW\",\n    \"URN\": \"987654\",\n    \"Town\": \"London\",\n    \"Phase\": \"Secondary\",\n    \"Gender\": \"Mixed\",\n    \"Street\": \"Green Road\",\n    \"AddressLine1\": \"Camden Town\",\n    \"TelephoneNumber\": \"02079460123\",\n     \"country\": \"England\",\n    \"latitude\": 51.539,\n    \"longitude\": -0.142\n}\n"
+            },
+            "url": {
+              "raw": "{{base_url}}/organizations/create-organization",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organizations",
+                "create-organization"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Organizations",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/organizations",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organizations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Organization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/organizations/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organizations",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Organization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phase\": \"Established\",\n  \"notes\": \"Updated organization details.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/organizations/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organizations",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Organization",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/organizations/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "organizations",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Contacts",
+      "item": [
+        {
+          "name": "Create Contact",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"organizationId\": \"23c82571-e666-4f64-b03d-07fe36f2449f\",\n    \"FullName\": \"John Doe\",\n    \"WorkEmail\": \"john.doe@example.com\",\n    \"WorkPhone\": \"07700900000\",\n    \"JobTitle\": \"Headteacher\",\n    \"Department\": \"Management\",\n    \"Gender\": \"Male\"\n}\n"
+            },
+            "url": {
+              "raw": "{{base_url}}/contacts/create-contact",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                "create-contact"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Contacts",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contacts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Contact",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contacts/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Contact",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobTitle\": \"Director of HR\",\n  \"phone\": \"+1112223334\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/contacts/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Contact",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/contacts/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "contacts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password (Authenticated)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{project_manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"123456\",\n  \"newPassword\": \"newSecurePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/change-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "change-password"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000/api"
+    },
+    {
+      "key": "tokenUser",
+      "value": ""
+    },
+    {
+      "key": "project_manager_token",
+      "value": ""
+    },
+    {
+      "key": "live url",
+      "value": ""
+    },
+    {
+      "key": "local Url",
+      "value": ""
+    }
+  ]
+}

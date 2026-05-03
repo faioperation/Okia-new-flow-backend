@@ -50,11 +50,13 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
               const key = `${normalizeName(orgName)}|${(localAuth || '').toLowerCase().trim()}`;
               const orgId = orgLookup.get(key) || null;
 
+              const gender = item.Gender || item.gender;
               return {
                 userId,
                 payload: item as any,
                 organizationName: normalizeName(orgName),
                 localAuthority: (localAuth || '').trim(),
+                gender: gender ? String(gender) : null,
                 importedOrganizationId: orgId
               } as any;
             });
@@ -179,16 +181,8 @@ const getAllImports = async (userId: string, query: any) => {
   const result = await prisma.importContact.findMany({
     where,
     include: {
-      importedOrganization: {
-        select: {
-          payload: true,
-          latitude: true,
-          longitude: true,
-          region: true,
-          district: true,
-          country: true
-        }
-      }
+      importedOrganization: true,
+      organization: true
     },
     orderBy: { createdAt: 'desc' },
     // Pagination will be handled in memory for merging
@@ -252,7 +246,8 @@ const getAllImports = async (userId: string, query: any) => {
   const manualContacts = await prisma.contact.findMany({
     where: manualWhere,
     include: {
-      organization: true
+      organization: true,
+      importedOrganization: true
     }
   });
 
@@ -268,22 +263,22 @@ const getAllImports = async (userId: string, query: any) => {
     Department: c.department,
     isManual: true,
     distance: null, // Distance filtering not implemented for manual yet
-    organizationDetails: c.organization ? {
-      OrganizationName: c.organization.name,
-      LocalAuthority: c.organization.localAuthority,
-      Postcode: c.organization.postcode,
-      URN: c.organization.urn,
-      Town: c.organization.town,
-      Phase: c.organization.phase,
-      Gender: c.organization.gender,
-      Street: c.organization.street,
-      AddressLine1: c.organization.address,
-      TelephoneNumber: c.organization.phone,
-      latitude: c.organization.latitude ? parseFloat(c.organization.latitude) : null,
-      longitude: c.organization.longitude ? parseFloat(c.organization.longitude) : null,
-      region: c.organization.town,
-      district: c.organization.localAuthority,
-      country: c.organization.country,
+    organizationDetails: (c.organization || c.importedOrganization) ? {
+      OrganizationName: c.organization?.name || (c.importedOrganization?.payload as any)?.OrganizationName,
+      LocalAuthority: c.organization?.localAuthority || (c.importedOrganization?.payload as any)?.LocalAuthority,
+      Postcode: c.organization?.postcode || (c.importedOrganization?.payload as any)?.Postcode,
+      URN: c.organization?.urn || (c.importedOrganization?.payload as any)?.URN,
+      Town: c.organization?.town || (c.importedOrganization?.payload as any)?.Town,
+      Phase: c.organization?.phase || (c.importedOrganization?.payload as any)?.Phase,
+      Gender: c.organization?.gender || (c.importedOrganization?.payload as any)?.Gender,
+      Street: c.organization?.street || (c.importedOrganization?.payload as any)?.Street,
+      AddressLine1: c.organization?.address || (c.importedOrganization?.payload as any)?.AddressLine1,
+      TelephoneNumber: c.organization?.phone || (c.importedOrganization?.payload as any)?.TelephoneNumber,
+      latitude: c.organization?.latitude ? parseFloat(c.organization?.latitude) : (c.importedOrganization?.latitude || null),
+      longitude: c.organization?.longitude ? parseFloat(c.organization?.longitude) : (c.importedOrganization?.longitude || null),
+      region: c.organization?.town || c.importedOrganization?.region,
+      district: c.organization?.localAuthority || c.importedOrganization?.district,
+      country: c.organization?.country || c.importedOrganization?.country,
     } : null,
     createdAt: c.createdAt
   }));
@@ -297,10 +292,23 @@ const getAllImports = async (userId: string, query: any) => {
       ...payload,
       distance: (item as any).distance ? parseFloat((item as any).distance.toFixed(2)) : null,
       importedOrganizationId: item.importedOrganizationId,
-      organizationDetails: org ? {
-        ...(org.payload as object),
-        latitude: org.latitude,
-        longitude: org.longitude,
+      Gender: item.gender,
+      organizationDetails: (org || item.organization) ? {
+        ...(org?.payload as object || {}),
+        ...(item.organization ? {
+          OrganizationName: item.organization.name,
+          LocalAuthority: item.organization.localAuthority,
+          Postcode: item.organization.postcode,
+          URN: item.organization.urn,
+          Town: item.organization.town,
+          Phase: item.organization.phase,
+          Gender: item.organization.gender,
+          Street: item.organization.street,
+          AddressLine1: item.organization.address,
+          TelephoneNumber: item.organization.phone,
+        } : {}),
+        latitude: org?.latitude || (item.organization?.latitude ? parseFloat(item.organization.latitude) : null),
+        longitude: org?.longitude || (item.organization?.longitude ? parseFloat(item.organization.longitude) : null),
       } : null,
       isManual: false,
       createdAt: item.createdAt
@@ -355,7 +363,8 @@ const getImportById = async (id: string, userId: string) => {
   const result = await prisma.importContact.findFirst({
     where: { id, userId },
     include: {
-      importedOrganization: true
+      importedOrganization: true,
+      organization: true
     }
   });
 
@@ -364,12 +373,25 @@ const getImportById = async (id: string, userId: string) => {
     return {
       id: result.id,
       ...payload,
-      importedOrganization: result.importedOrganization ? {
-        ...(result.importedOrganization.payload as object),
-        latitude: result.importedOrganization.latitude,
-        longitude: result.importedOrganization.longitude,
+      importedOrganization: (result.importedOrganization || result.organization) ? {
+        ...(result.importedOrganization?.payload as object || {}),
+        ...(result.organization ? {
+           OrganizationName: result.organization.name,
+           LocalAuthority: result.organization.localAuthority,
+           Postcode: result.organization.postcode,
+           URN: result.organization.urn,
+           Town: result.organization.town,
+           Phase: result.organization.phase,
+           Gender: result.organization.gender,
+           Street: result.organization.street,
+           AddressLine1: result.organization.address,
+           TelephoneNumber: result.organization.phone,
+        } : {}),
+        latitude: result.importedOrganization?.latitude || (result.organization?.latitude ? parseFloat(result.organization.latitude) : null),
+        longitude: result.importedOrganization?.longitude || (result.organization?.longitude ? parseFloat(result.organization.longitude) : null),
       } : null,
       isManual: false,
+      Gender: result.gender,
       createdAt: result.createdAt
     };
   }
@@ -378,7 +400,8 @@ const getImportById = async (id: string, userId: string) => {
   const manualContact = await prisma.contact.findFirst({
     where: { id, userId },
     include: {
-      organization: true
+      organization: true,
+      importedOrganization: true
     }
   });
 
@@ -392,22 +415,22 @@ const getImportById = async (id: string, userId: string) => {
       Department: manualContact.department,
       Gender: manualContact.gender,
       isManual: true,
-      organizationDetails: manualContact.organization ? {
-        OrganizationName: manualContact.organization.name,
-        LocalAuthority: manualContact.organization.localAuthority,
-        Postcode: manualContact.organization.postcode,
-        URN: manualContact.organization.urn,
-        Town: manualContact.organization.town,
-        Phase: manualContact.organization.phase,
-        Gender: manualContact.organization.gender,
-        Street: manualContact.organization.street,
-        AddressLine1: manualContact.organization.address,
-        TelephoneNumber: manualContact.organization.phone,
-        latitude: manualContact.organization.latitude ? parseFloat(manualContact.organization.latitude) : null,
-        longitude: manualContact.organization.longitude ? parseFloat(manualContact.organization.longitude) : null,
-        region: manualContact.organization.town,
-        district: manualContact.organization.localAuthority,
-        country: manualContact.organization.country,
+      organizationDetails: (manualContact.organization || manualContact.importedOrganization) ? {
+        OrganizationName: manualContact.organization?.name || (manualContact.importedOrganization?.payload as any)?.OrganizationName,
+        LocalAuthority: manualContact.organization?.localAuthority || (manualContact.importedOrganization?.payload as any)?.LocalAuthority,
+        Postcode: manualContact.organization?.postcode || (manualContact.importedOrganization?.payload as any)?.Postcode,
+        URN: manualContact.organization?.urn || (manualContact.importedOrganization?.payload as any)?.URN,
+        Town: manualContact.organization?.town || (manualContact.importedOrganization?.payload as any)?.Town,
+        Phase: manualContact.organization?.phase || (manualContact.importedOrganization?.payload as any)?.Phase,
+        Gender: manualContact.organization?.gender || (manualContact.importedOrganization?.payload as any)?.Gender,
+        Street: manualContact.organization?.street || (manualContact.importedOrganization?.payload as any)?.Street,
+        AddressLine1: manualContact.organization?.address || (manualContact.importedOrganization?.payload as any)?.AddressLine1,
+        TelephoneNumber: manualContact.organization?.phone || (manualContact.importedOrganization?.payload as any)?.TelephoneNumber,
+        latitude: manualContact.organization?.latitude ? parseFloat(manualContact.organization.latitude) : (manualContact.importedOrganization?.latitude || null),
+        longitude: manualContact.organization?.longitude ? parseFloat(manualContact.organization.longitude) : (manualContact.importedOrganization?.longitude || null),
+        region: manualContact.organization?.town || manualContact.importedOrganization?.region,
+        district: manualContact.organization?.localAuthority || manualContact.importedOrganization?.district,
+        country: manualContact.organization?.country || manualContact.importedOrganization?.country,
       } : null,
       createdAt: manualContact.createdAt
     };
@@ -417,10 +440,15 @@ const getImportById = async (id: string, userId: string) => {
 };
 
 const deleteImport = async (id: string, userId: string) => {
-  const result = await prisma.importContact.deleteMany({
+  const result1 = await prisma.importContact.deleteMany({
     where: { id, userId },
   });
-  return result;
+
+  const result2 = await prisma.contact.deleteMany({
+    where: { id, userId },
+  });
+
+  return { count: result1.count + result2.count };
 };
 
 const deleteAllImports = async (userId: string) => {
@@ -431,16 +459,141 @@ const deleteAllImports = async (userId: string) => {
 };
 
 const updateImport = async (id: string, userId: string, data: any) => {
-  const { payload, ...rootFields } = data;
+  // Case-insensitive extraction
+  const getField = (obj: any, ...keys: string[]) => {
+    for (const key of keys) {
+      if (obj[key] !== undefined) return obj[key];
+    }
+    return undefined;
+  };
 
-  const result = await prisma.importContact.updateMany({
+  const payload = data.payload;
+  const organizationName = getField(data, 'organizationName', 'OrganizationName');
+  const localAuthority = getField(data, 'localAuthority', 'LocalAuthority');
+  const gender = getField(data, 'gender', 'Gender');
+  const importedOrganizationId = getField(data, 'importedOrganizationId', 'organizationId'); // in imports we often use organizationId for the linked one
+  const organizationDetails = data.organizationDetails;
+
+  // Filter out the extracted fields to get "otherFields"
+  const knownKeys = ['payload', 'organizationName', 'OrganizationName', 'localAuthority', 'LocalAuthority', 'gender', 'Gender', 'importedOrganizationId', 'organizationId', 'organizationDetails'];
+  const otherFields: any = {};
+  for (const key in data) {
+    if (!knownKeys.includes(key)) {
+      otherFields[key] = data[key];
+    }
+  }
+
+  const finalGender = gender;
+
+  // 1. Update Linked Organization if organizationDetails is provided
+  if (organizationDetails) {
+    // Find the contact to see which organization is linked
+    const contact = await prisma.contact.findFirst({
+      where: { id, userId },
+      select: { organizationId: true, importedOrganizationId: true }
+    });
+
+    const importContact = await prisma.importContact.findFirst({
+      where: { id, userId },
+      select: { importedOrganizationId: true, organizationId: true }
+    });
+
+    const manualOrgId = contact?.organizationId || importContact?.organizationId;
+    const importedOrgId = contact?.importedOrganizationId || importContact?.importedOrganizationId;
+
+    if (manualOrgId) {
+      const orgData = {
+        ...(organizationDetails.OrganizationName && { name: organizationDetails.OrganizationName }),
+        ...(organizationDetails.LocalAuthority && { localAuthority: organizationDetails.LocalAuthority }),
+        ...(organizationDetails.Postcode && { postcode: organizationDetails.Postcode }),
+        ...(organizationDetails.URN && { urn: String(organizationDetails.URN) }),
+        ...(organizationDetails.Town && { town: organizationDetails.Town }),
+        ...(organizationDetails.Phase && { phase: organizationDetails.Phase }),
+        ...(organizationDetails.Gender && { gender: organizationDetails.Gender }),
+        ...(organizationDetails.Street && { street: organizationDetails.Street }),
+        ...(organizationDetails.AddressLine1 && { address: organizationDetails.AddressLine1 }),
+        ...(organizationDetails.TelephoneNumber && { phone: String(organizationDetails.TelephoneNumber) }),
+        ...(organizationDetails.latitude && { latitude: String(organizationDetails.latitude) }),
+        ...(organizationDetails.longitude && { longitude: String(organizationDetails.longitude) }),
+        ...(organizationDetails.country && { country: organizationDetails.country }),
+      };
+      await prisma.organization.updateMany({
+        where: { id: manualOrgId, userId },
+        data: orgData
+      });
+    }
+
+    if (importedOrgId) {
+      const importedOrg = await prisma.importedOrganization.findUnique({
+        where: { id: importedOrgId }
+      });
+      if (importedOrg) {
+        await prisma.importedOrganization.update({
+          where: { id: importedOrgId },
+          data: {
+            payload: {
+              ...(importedOrg.payload as object || {}),
+              ...organizationDetails
+            },
+            ...(organizationDetails.latitude && { latitude: organizationDetails.latitude }),
+            ...(organizationDetails.longitude && { longitude: organizationDetails.longitude }),
+          }
+        });
+      }
+    }
+  }
+
+  // 2. Update ImportContact
+  const result1 = await prisma.importContact.updateMany({
     where: { id, userId },
     data: {
-      ...rootFields,
-      ...(payload && { payload: payload })
+      ...(organizationName && { organizationName }),
+      ...(localAuthority && { localAuthority }),
+      ...(finalGender && { gender: finalGender }),
+      ...(importedOrganizationId && { importedOrganizationId }),
+      payload: {
+        ...(payload || {}),
+        ...otherFields,
+        ...(organizationDetails && { organizationDetails })
+      }
     }
   });
-  return result;
+
+  // 3. Update manual Contact
+  const p = { ...(payload || {}), ...otherFields };
+  const fullName = getField(p, 'fullName', 'FullName');
+  const email = getField(p, 'email', 'WorkEmail');
+  const phone = getField(p, 'phone', 'WorkPhone');
+  const jobTitle = getField(p, 'jobTitle', 'JobTitle');
+  const department = getField(p, 'department', 'Department');
+  const manualGender = getField(p, 'gender', 'Gender');
+  const organizationId = getField(p, 'organizationId');
+
+  let isManualOrg = false;
+  if (organizationId) {
+    const org = await prisma.organization.findUnique({ where: { id: organizationId } });
+    if (org) isManualOrg = true;
+  }
+
+  const contactData = {
+    ...otherFields,
+    ...(fullName && { fullName }),
+    ...(email && { email }),
+    ...(phone && { phone }),
+    ...(jobTitle && { jobTitle }),
+    ...(department && { department }),
+    ...(manualGender && { gender: manualGender }),
+    ...(organizationId && (isManualOrg 
+      ? { organizationId, importedOrganizationId: null } 
+      : { organizationId: null, importedOrganizationId: organizationId })),
+  };
+
+  const result2 = await prisma.contact.updateMany({
+    where: { id, userId },
+    data: contactData
+  });
+
+  return { count: result1.count + result2.count };
 };
 
 const getFilters = async (userId: string) => {

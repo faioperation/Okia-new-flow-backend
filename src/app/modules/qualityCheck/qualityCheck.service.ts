@@ -151,7 +151,7 @@ const runQualityCheckWithRetry = async (batchId: string, rules?: any, attempt = 
 
 
 const syncAllPendingChecks = async () => {
-  console.log(`[AI Sync] Starting 12-hour sync...`);
+  console.log(`[AI Sync] Starting every minute sync...`);
   try {
     const response = await fetch(`${config.AI_API_URL}/qualify`, {
       method: 'POST',
