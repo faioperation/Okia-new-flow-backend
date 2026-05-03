@@ -58,7 +58,7 @@ const processAiResponse = async (aiResponse: any) => {
     // 4. Update Candidate details (aiCheck and qualityStatus)
     await prisma.candidate.update({
       where: { id: candidate_id },
-      data: { 
+      data: {
         aiCheck: true,
         qualityStatus: qualityPass ? 'passed' : 'failed'
       }
@@ -84,7 +84,7 @@ const runQualityCheckWithRetry = async (batchId: string, rules?: any, attempt = 
     await new Promise((resolve) => setTimeout(resolve, 5000));
   }
   console.log(`[AI Check] Attempt ${attempt} starting...`);
-  
+
   try {
     // 1. Find candidates associated with this Batch
     const candidates = await prisma.candidate.findMany({
@@ -103,13 +103,14 @@ const runQualityCheckWithRetry = async (batchId: string, rules?: any, attempt = 
     console.log(`[AI Check] Calling AI API at ${config.AI_API_URL}/qualify for Candidate ID: ${targetCandidateId}...`);
     const response = await fetch(`${config.AI_API_URL}/qualify`, {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
         'X-Backend-Token': config.AI_HEADER_KEY
       },
       body: JSON.stringify({ 
         candidate_id: targetCandidateId,
-        rules: rules
+        rules: rules,
+        callback_url: `${config.BACKEND_URL}/api/quality-checks/callback`
       })
     });
 
@@ -118,10 +119,10 @@ const runQualityCheckWithRetry = async (batchId: string, rules?: any, attempt = 
     if (response.ok) {
       const aiData = await response.json() as any;
       console.log(`[AI Check] AI Response Received:`, JSON.stringify(aiData, null, 2));
-      
+
       const processed = await processAiResponse(aiData);
       console.log(`[AI Check] Processed ${processed.length} results.`);
-      
+
       if (processed.length > 0) {
         console.log(`[AI Check] SUCCESS: AI data saved for candidates.`);
         return;
@@ -144,7 +145,7 @@ const runQualityCheckWithRetry = async (batchId: string, rules?: any, attempt = 
   if (attempt < maxAttempts) {
     let delay = 60 * 1000; // Default 1 minute
     if (attempt === 2) delay = 90 * 1000; // 1 minute 30 seconds for the second retry
-    
+
     console.log(`[AI Check] Data not ready. Retrying in ${delay / 1000}s... (Attempt ${attempt + 1}/${maxAttempts})`);
 
     await new Promise((resolve) => setTimeout(resolve, delay));
@@ -160,11 +161,13 @@ const syncAllPendingChecks = async () => {
   try {
     const response = await fetch(`${config.AI_API_URL}/qualify`, {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
         'X-Backend-Token': config.AI_HEADER_KEY
       },
-      body: JSON.stringify({})
+      body: JSON.stringify({
+        callback_url: `${config.BACKEND_URL}/api/quality-checks/callback`
+      })
     });
 
 
@@ -254,7 +257,7 @@ const updateQualityCheck = async (id: string, payload: any) => {
 
     // Ensure protected candidate fields are not overwritten
     const protectedCandidateFields = [
-      'id', 'createdAt', 'updatedAt', 'batchId', 'candidateId', 
+      'id', 'createdAt', 'updatedAt', 'batchId', 'candidateId',
       'cvId', 'fullResponse', 'uploadTime'
     ];
     protectedCandidateFields.forEach(field => delete candidateUpdateData[field]);
@@ -314,6 +317,7 @@ const deleteAllQualityChecks = async () => {
 export const qualityCheckServices = {
   runQualityCheckWithRetry,
   syncAllPendingChecks,
+  processAiResponse,
   getAllQualityChecks,
   getQualityCheckById,
   updateQualityCheck,

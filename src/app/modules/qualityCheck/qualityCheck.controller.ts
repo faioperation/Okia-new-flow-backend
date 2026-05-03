@@ -8,14 +8,14 @@ import { prisma } from "../../db_connection";
 
 const createQualityCheck = catchAsync(async (req: Request, res: Response) => {
   const { batch_id } = req.body;
-  
+
   if (!batch_id) {
     throw new ApiError(httpStatus.BAD_REQUEST, "batch_id is required");
   }
 
   // Use the correct service method name
   const result = await qualityCheckServices.runQualityCheckWithRetry(batch_id);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
@@ -26,12 +26,12 @@ const createQualityCheck = catchAsync(async (req: Request, res: Response) => {
 
 const getAllQualityChecks = catchAsync(async (req: Request, res: Response) => {
   const result = await qualityCheckServices.getAllQualityChecks(req.query);
-  
+
   // Get global counts (ignoring filters for the dashboard)
   const allChecks = await prisma.qualityCheck.findMany({
     where: { deletedAt: null }
   });
-  
+
   const totalQualityPassCount = allChecks.filter(check => check.qualityPass === true).length;
   const totalQualityFailedCount = allChecks.filter(check => check.qualityPass === false).length;
   const totalUploadCount = allChecks.length;
@@ -92,6 +92,28 @@ const deleteAllQualityChecks = catchAsync(async (req: Request, res: Response) =>
   });
 });
 
+const processAiCallback = catchAsync(async (req: Request, res: Response) => {
+  const aiData = req.body;
+  const authHeader = req.headers['backend-header'];
+
+  // Verify token for production security
+  if (authHeader !== 'fjdsof798sdfasdfji23rf89sdfjdf4') {
+    console.warn(`[AI Callback] Unauthorized attempt with token: ${authHeader}`);
+    throw new ApiError(httpStatus.UNAUTHORIZED, "Invalid AI callback token");
+  }
+
+  console.log(`[AI Callback] Received data:`, JSON.stringify(aiData, null, 2));
+  
+  const result = await qualityCheckServices.processAiResponse(aiData);
+  
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "AI callback processed successfully",
+    data: result,
+  });
+});
+
 export const qualityCheckControllers = {
   createQualityCheck,
   getAllQualityChecks,
@@ -99,4 +121,5 @@ export const qualityCheckControllers = {
   updateQualityCheck,
   deleteQualityCheck,
   deleteAllQualityChecks,
+  processAiCallback,
 };
