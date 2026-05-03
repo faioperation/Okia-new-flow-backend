@@ -3,7 +3,7 @@ import { qualityCheckServices } from '../modules/qualityCheck/qualityCheck.servi
 
 const setupQualityCheckSync = () => {
   // Run every 12 hours: '0 */12 * * *'
-  cron.schedule('* * * * *', async () => {
+  cron.schedule('*/30 * * * *', async () => {
     console.log('[Cron] Running every minute Quality Check Sync...');
     await qualityCheckServices.syncAllPendingChecks();
   });
