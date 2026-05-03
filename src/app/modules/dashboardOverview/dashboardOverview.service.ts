@@ -9,8 +9,8 @@ const getStats = async () => {
     latestActivityLogs
   ] = await Promise.all([
     prisma.candidate.count(),
-    prisma.candidate.count({ where: { aiCheck: true } }),
-    prisma.candidate.count({ where: { aiCheck: false } }),
+    prisma.qualityCheck.count({ where: { qualityPass: true } }),
+    prisma.qualityCheck.count({ where: { qualityPass: false } }),
     prisma.generatedEmail.count(),
     prisma.activityLog.findMany({
       orderBy: { createdAt: 'desc' },
