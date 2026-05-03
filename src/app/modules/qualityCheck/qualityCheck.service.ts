@@ -125,7 +125,7 @@ const runQualityCheckWithRetry = async (batchId: string, rules?: any, attempt = 
 
       if (processed.length > 0) {
         console.log(`[AI Check] SUCCESS: AI data saved for candidates.`);
-        return;
+        return processed;
       } else {
         console.log(`[AI Check] WARNING: AI returned data, but none could be matched.`);
       }

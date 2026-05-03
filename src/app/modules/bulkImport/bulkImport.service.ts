@@ -171,12 +171,18 @@ const startBulkImport = async (files: Express.Multer.File[], rules: any, userId:
 
   // 3. Trigger AI Quality Check and WAIT for it to finish
   console.log(`[Batch ${batch.id}] Starting AI Quality Check...`);
-  await qualityCheckServices.runQualityCheckWithRetry(batch.id, rules);
+  const qualityResults = await qualityCheckServices.runQualityCheckWithRetry(batch.id, rules);
 
   // 4. Send Outreach Emails in background (don't await)
   sendOutreachEmails(batch.id);
 
-  return batch.id;
+  return {
+    batchId: batch.id,
+    totalFiles: updatedBatch.totalFiles,
+    completedFiles: updatedBatch.completedFiles,
+    failedFiles: updatedBatch.failedFiles,
+    qualityResults: qualityResults || []
+  };
 };
 
 const sendOutreachEmails = async (batchId: string) => {

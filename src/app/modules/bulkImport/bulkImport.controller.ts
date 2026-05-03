@@ -28,7 +28,8 @@ const uploadCvs = catchAsync(async (req, res) => {
   };
 
   const userId = (req as any).user.id;
-  const batchId = await bulkImportServices.startBulkImport(files, rules, userId);
+  const importResult = await bulkImportServices.startBulkImport(files, rules, userId);
+  const batchId = importResult.batchId;
 
   // Fetch final results for the response
   const finalBatch = await prisma.bulkUploadBatch.findUnique({
@@ -52,7 +53,8 @@ const uploadCvs = catchAsync(async (req, res) => {
     totalQualityFailedCount,
     data: { 
       batchId,
-      batch: finalBatch
+      batch: finalBatch,
+      qualityResults: importResult.qualityResults
     },
   });
 });
