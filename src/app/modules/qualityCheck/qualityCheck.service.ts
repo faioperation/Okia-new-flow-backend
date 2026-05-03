@@ -7,8 +7,11 @@ import { AvailabilityStatus } from "@prisma/client";
 
 const processAiResponse = async (aiResponse: any) => {
   if (aiResponse.status !== 'success' || !Array.isArray(aiResponse.data)) {
+    console.log(`[AI Response Process] Invalid or unsuccessful AI response format. Status: ${aiResponse.status}`);
     return [];
   }
+
+  console.log(`[AI Response Process] Starting to save ${aiResponse.data.length} quality check results...`);
 
   const results = [];
   for (const item of aiResponse.data) {
@@ -70,6 +73,7 @@ const processAiResponse = async (aiResponse: any) => {
     results.push(qualityCheck);
   }
 
+  console.log(`[AI Response Process] Finished processing. Saved ${results.length} records.`);
   return results;
 };
 
@@ -96,6 +100,7 @@ const runQualityCheckWithRetry = async (batchId: string, rules?: any, attempt = 
     // Use the first candidate's ID for the AI call
     const targetCandidateId = candidates[0].id;
 
+    console.log(`[AI Check] Calling AI API at ${config.AI_API_URL}/qualify for Candidate ID: ${targetCandidateId}...`);
     const response = await fetch(`${config.AI_API_URL}/qualify`, {
       method: 'POST',
       headers: { 
@@ -112,7 +117,7 @@ const runQualityCheckWithRetry = async (batchId: string, rules?: any, attempt = 
 
     if (response.ok) {
       const aiData = await response.json() as any;
-      console.log(`[AI Check] API Data received. Status: ${aiData.status}`);
+      console.log(`[AI Check] AI Response Received:`, JSON.stringify(aiData, null, 2));
       
       const processed = await processAiResponse(aiData);
       console.log(`[AI Check] Processed ${processed.length} results.`);
@@ -165,7 +170,11 @@ const syncAllPendingChecks = async () => {
 
     if (response.ok) {
       const aiData = await response.json();
-      await processAiResponse(aiData);
+      console.log(`[AI Sync] Data received:`, JSON.stringify(aiData, null, 2));
+      const processed = await processAiResponse(aiData);
+      console.log(`[AI Sync] Processed ${processed.length} results.`);
+    } else {
+      console.error(`[AI Sync] API Error: ${response.status}`);
     }
   } catch (error) {
     console.error(`[AI Sync] Sync failed:`, error);
