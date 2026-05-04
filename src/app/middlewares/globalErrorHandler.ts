@@ -43,6 +43,14 @@ const globalErrorHandler = (err: any, req: Request, res: Response, next: NextFun
             error = err.message,
             statusCode = httpStatus.BAD_REQUEST
     }
+    else if (err.code === "LIMIT_FILE_COUNT") {
+        message = "Maximum 100 CV files can be uploaded at once.";
+        statusCode = httpStatus.BAD_REQUEST;
+    }
+    else if (err.code === "LIMIT_FILE_SIZE") {
+        message = "File size too large. Maximum 10MB per file allowed.";
+        statusCode = httpStatus.BAD_REQUEST;
+    }
 
     res.status(statusCode).json({
         success,

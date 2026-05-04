@@ -7,7 +7,10 @@ import { authServices } from "./auth.service";
 const userLogin = catchAsync(async(req,res,next)=>{
     const {email,password} = req.body;
     const user = await authServices.loginUser({email,password});
-    const token = await createUserToken(user)
+    const token = await createUserToken({
+      ...user,
+      name: `${user.firstName} ${user.lastName}`
+    });
    await setCookie(res,token)
    sendResponse(res,{
     success:true,

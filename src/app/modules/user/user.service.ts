@@ -8,9 +8,13 @@ const getProfile = async (id: string) => {
     where: { id },
     select: {
       id: true,
-      name: true,
+      firstName: true,
+      lastName: true,
       email: true,
+      profilePicture: true,
       contactNo: true,
+      gender: true,
+      country: true,
       isBlocked: true,
       createdAt: true,
       updatedAt: true,
@@ -53,7 +57,17 @@ const changePassword = async (id: string, payload: any) => {
   return null;
 };
 
+const updateProfile = async (id: string, payload: any) => {
+  const result = await prisma.user.update({
+    where: { id },
+    data: payload,
+  });
+
+  return result;
+};
+
 export const userServices = {
   getProfile,
   changePassword,
+  updateProfile,
 };

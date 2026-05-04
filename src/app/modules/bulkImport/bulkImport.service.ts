@@ -133,6 +133,10 @@ const processSingleCv = async (
 
 
 const startBulkImport = async (files: Express.Multer.File[], rules: any, userId: string) => {
+  if (files.length > 100) {
+    throw new Error("Maximum 100 CV files can be uploaded at once.");
+  }
+
   const batch = await prisma.bulkUploadBatch.create({
     data: {
       totalFiles: files.length,

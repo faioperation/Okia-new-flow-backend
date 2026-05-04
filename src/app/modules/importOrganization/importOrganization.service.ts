@@ -58,66 +58,100 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
               })
             );
 
-            // Filter and Geocode the new data
-            const uniqueNewData = [];
-            let count = 0;
-            for (const item of jsonData) {
-              count++;
-              console.log(`[Import] Item ${count} start...`);
+            let successCount = 0;
+            let skippedCount = 0;
 
-              const key = `${item.OrganizationName || ''}|${item.LocalAuthority || ''}`.toLowerCase().trim();
-              if (!existingKeys.has(key)) {
-                // Fetch geodata for new items
-                const geodata = await fetchGeodata(item.Postcode || item.postcode);
-                uniqueNewData.push({
-                  userId,
-                  payload: item as any,
-                  ...geodata
-                });
-                existingKeys.add(key);
+            // Process in batches of 100 for geocoding
+            const batchSize = 100;
+            for (let i = 0; i < jsonData.length; i += batchSize) {
+              const batch = jsonData.slice(i, i + batchSize);
+              
+              // Filter out duplicates and items to process
+              const itemsToProcess = [];
+              const postcodesToFetch = [];
+
+              for (const item of batch) {
+                const key = `${item.OrganizationName || ''}|${item.LocalAuthority || ''}`.toLowerCase().trim();
+                if (existingKeys.has(key)) {
+                  skippedCount++;
+                  continue;
+                }
+                itemsToProcess.push({ item, key });
+                const pc = item.Postcode || item.postcode;
+                if (pc) postcodesToFetch.push(pc.trim());
               }
-              console.log(`[Import] Item ${count} done.✅`);
-            }
 
-            if (uniqueNewData.length > 0) {
-              // We use a loop instead of createMany to get the IDs back for linking contacts
-              for (const orgData of uniqueNewData) {
-                const createdOrg = await prisma.importedOrganization.create({
-                  data: orgData
-                });
+              if (itemsToProcess.length === 0) continue;
 
-                // Link existing contacts that match this organization
-                const payload = orgData.payload as any;
-                const orgName = payload.OrganizationName;
-                const localAuthority = payload.LocalAuthority;
+              // Fetch geodata in bulk for this batch
+              let geodataResults: any[] = [];
+              if (postcodesToFetch.length > 0) {
+                try {
+                  const response = await axios.post(`https://api.postcodes.io/postcodes`, {
+                    postcodes: postcodesToFetch
+                  });
+                  if (response.data.status === 200) {
+                    geodataResults = response.data.result;
+                  }
+                } catch (e) {
+                  console.error("[Geocode] Bulk fetch failed", e);
+                }
+              }
 
-                if (orgName && localAuthority) {
-                  // Link contacts that match this organization using the new dedicated fields
-                  // @ts-ignore
-                  const updatedContacts = await prisma.importContact.updateMany({
-                    where: {
-                      userId,
-                      organizationName: orgName,
-                      localAuthority: localAuthority,
-                      importedOrganizationId: null,
-                    } as any,
+              // Create a map for quick geodata lookup
+              const geodataMap = new Map();
+              geodataResults.forEach(res => {
+                if (res.result) {
+                  const { latitude, longitude, region, admin_district, country } = res.result;
+                  geodataMap.set(res.query.trim().toLowerCase(), { latitude, longitude, region, district: admin_district, country });
+                }
+              });
+
+              // Save items individually
+              for (const { item, key } of itemsToProcess) {
+                try {
+                  const pc = (item.Postcode || item.postcode || "").trim().toLowerCase();
+                  const geodata = geodataMap.get(pc) || null;
+
+                  const createdOrg = await prisma.importedOrganization.create({
                     data: {
-                      importedOrganizationId: createdOrg.id
+                      userId,
+                      payload: item as any,
+                      ...geodata
                     }
                   });
 
-                  if (updatedContacts.count > 0) {
-                    console.log(`[Link] Linked ${updatedContacts.count} existing contacts to new organization: ${orgName}`);
+                  existingKeys.add(key);
+                  successCount++;
+
+                  // Link existing contacts
+                  const orgName = item.OrganizationName;
+                  const localAuthority = item.LocalAuthority;
+                  if (orgName && localAuthority) {
+                    await prisma.importContact.updateMany({
+                      where: {
+                        userId,
+                        organizationName: orgName.toLowerCase().replace(/\s+school$/i, '').trim(),
+                        localAuthority: localAuthority.trim(),
+                        importedOrganizationId: null,
+                      },
+                      data: {
+                        importedOrganizationId: createdOrg.id
+                      }
+                    });
                   }
+                } catch (err: any) {
+                  console.error(`[Import] Failed to save organization: ${item.OrganizationName}`, err.message);
                 }
               }
+              console.log(`[Import] Processed batch ${Math.floor(i/batchSize) + 1}. Total success so far: ${successCount}`);
             }
 
             await fs.unlink(file.path);
             return {
               fileName: file.originalname,
-              rowCount: uniqueNewData.length,
-              skippedCount: jsonData.length - uniqueNewData.length
+              rowCount: successCount,
+              skippedCount: skippedCount
             };
           }
         } catch (error: any) {

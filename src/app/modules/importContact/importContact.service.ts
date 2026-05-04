@@ -42,35 +42,40 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
         try {
           const jsonData = await parseExcelFile(file.path) as any[];
 
-          if (Array.isArray(jsonData)) {
-            const mappedData = jsonData.map(item => {
-              const orgName = item.OrganizationName || null;
-              const localAuth = item.LocalAuthority || null;
+            let successCount = 0;
+            if (Array.isArray(jsonData)) {
+              for (const item of jsonData) {
+                try {
+                  const orgName = item.OrganizationName || null;
+                  const localAuth = item.LocalAuthority || null;
 
-              const key = `${normalizeName(orgName)}|${(localAuth || '').toLowerCase().trim()}`;
-              const orgId = orgLookup.get(key) || null;
+                  const key = `${normalizeName(orgName)}|${(localAuth || '').toLowerCase().trim()}`;
+                  const orgId = orgLookup.get(key) || null;
 
-              const gender = item.Gender || item.gender;
-              return {
-                userId,
-                payload: item as any,
-                organizationName: normalizeName(orgName),
-                localAuthority: (localAuth || '').trim(),
-                gender: gender ? String(gender) : null,
-                importedOrganizationId: orgId
-              } as any;
-            });
+                  const gender = item.Gender || item.gender;
+                  
+                  await prisma.importContact.create({
+                    data: {
+                      userId,
+                      payload: item as any,
+                      organizationName: normalizeName(orgName),
+                      localAuthority: (localAuth || '').trim(),
+                      gender: gender ? String(gender) : null,
+                      importedOrganizationId: orgId
+                    }
+                  });
+                  successCount++;
+                } catch (err: any) {
+                  console.error(`[Import] Failed to save contact: ${item.FullName || 'Unknown'}`, err.message);
+                }
+              }
+            }
 
-            await prisma.importContact.createMany({
-              data: mappedData
-            });
-          }
-
-          await fs.unlink(file.path);
-          return {
-            fileName: file.originalname,
-            rowCount: jsonData.length,
-          };
+            await fs.unlink(file.path);
+            return {
+              fileName: file.originalname,
+              rowCount: successCount,
+            };
         } catch (error: any) {
           try {
             await fs.unlink(file.path);
