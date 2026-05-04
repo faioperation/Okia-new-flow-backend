@@ -8,10 +8,13 @@ let server: Server;
 const PORT = config.PORT || 5000;
 
 import { cronJobs } from "./app/cron/qualityCheckSync";
+import { seedAdmin } from "./app/db/seed";
 
 
 const startServer = async () => {
   try {
+    // Seed Admin
+    await seedAdmin();
     console.log(`Environment: ${config.NODE_ENV}`);
     // Start server
     server = app.listen(PORT, () => {
