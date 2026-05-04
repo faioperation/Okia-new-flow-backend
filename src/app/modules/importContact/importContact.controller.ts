@@ -14,7 +14,7 @@ const processExcelFiles = catchAsync(async (req: Request, res: Response) => {
   }
 
   const result = await importContactServices.processExcelFiles(files, userId);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -26,7 +26,7 @@ const processExcelFiles = catchAsync(async (req: Request, res: Response) => {
 const getAllImports = catchAsync(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const result = await importContactServices.getAllImports(userId, req.query);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -40,7 +40,7 @@ const getImportById = catchAsync(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const id = req.params.id as string;
   const result = await importContactServices.getImportById(id, userId);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -54,7 +54,7 @@ const deleteImport = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id as string;
 
   const result = await importContactServices.deleteImport(id, userId);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -66,7 +66,7 @@ const deleteImport = catchAsync(async (req: Request, res: Response) => {
 const deleteAllImports = catchAsync(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const result = await importContactServices.deleteAllImports(userId);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -79,7 +79,7 @@ const updateImport = catchAsync(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const id = req.params.id as string;
   const result = await importContactServices.updateImport(id, userId, req.body);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -91,7 +91,7 @@ const updateImport = catchAsync(async (req: Request, res: Response) => {
 const getFilters = catchAsync(async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const result = await importContactServices.getFilters(userId);
-  
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

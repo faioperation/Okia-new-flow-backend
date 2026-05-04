@@ -28,12 +28,15 @@ const loginUser = async (payload: { email: string; password: string }) => {
   return user;
 };
 
-const registerUser = async (payload: {
-  name: string;
-  email: string;
-  password: string;
-  contactNo: string;
-}) => {
+const registerUser = async (payload: any) => {
+  let { firstName, lastName, name } = payload;
+
+  if (!firstName && name) {
+    const parts = name.trim().split(/\s+/);
+    firstName = parts[0];
+    lastName = parts.slice(1).join(' ') || '';
+  }
+
   const result = await prisma.$transaction(async (tx) => {
     const existingUser = await tx.user.findUnique({
       where: { email: payload.email },
@@ -47,7 +50,8 @@ const registerUser = async (payload: {
 
     const user = await tx.user.create({
       data: {
-        name: payload.name,
+        firstName: firstName || '',
+        lastName: lastName || '',
         email: payload.email,
         password: hashed,
         contactNo: payload.contactNo,
@@ -96,7 +100,7 @@ const forgotPassword_sendPassword = async (email: string) => {
     subject: "Your OTP Code",
     tempName: "otp",
     tempData: {
-      name: isUserExist.name,
+      name: isUserExist.firstName,
       otp: otp,
     },
   });
