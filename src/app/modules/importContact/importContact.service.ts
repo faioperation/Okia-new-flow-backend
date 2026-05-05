@@ -103,11 +103,27 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
   return results;
 };
 
+const getArrayParam = (param1: any, param2: any) => {
+  let val = param1 || param2;
+  if (!val) return undefined;
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string') return val.split(',').map(v => v.trim()).filter(Boolean);
+  return [val];
+};
+
 const getAllImports = async (userId: string, query: any) => {
-  const { searchTerm, localAuthority, region, town, gender, phase, page = 1, limit = 10, radius, generatedCvId } = query;
+  const { searchTerm, page = 1, limit = 10, radius, generatedCvId } = query;
 
   const skip = (Number(page) - 1) * Number(limit);
   const take = Number(limit);
+
+  const filterAuthorities = getArrayParam(query.authorities, query.localAuthority);
+  const filterGenders = getArrayParam(query.genders, query.gender);
+  const filterRegions = getArrayParam(query.regions, query.region);
+  const filterTowns = getArrayParam(query.towns, query.town);
+  const filterPhases = getArrayParam(query.phases, query.phase);
+  const filterJobs = getArrayParam(query.jobs, query.job);
+  const filterCountries = getArrayParam(query.countries, query.country);
 
   const where: any = {
     userId,
@@ -124,56 +140,84 @@ const getAllImports = async (userId: string, query: any) => {
     });
   }
 
-  if (localAuthority) {
+  if (filterAuthorities && filterAuthorities.length > 0) {
     andConditions.push({
-      localAuthority: {
-        contains: localAuthority,
-        mode: 'insensitive',
-      },
+      OR: filterAuthorities.map((auth: string) => ({
+        localAuthority: { contains: auth, mode: 'insensitive' }
+      }))
     });
   }
 
-  if (gender) {
+  if (filterGenders && filterGenders.length > 0) {
     andConditions.push({
-      importedOrganization: {
-        payload: {
-          path: ['Gender'],
-          string_contains: gender,
-        },
-      },
+      OR: filterGenders.map((g: string) => ({
+        OR: [
+          { gender: { contains: g, mode: 'insensitive' } },
+          { importedOrganization: { payload: { path: ['Gender'], string_contains: g } } },
+          { importedOrganization: { payload: { path: ['gender'], string_contains: g } } },
+          { payload: { path: ['Gender'], string_contains: g } },
+          { payload: { path: ['gender'], string_contains: g } }
+        ]
+      }))
     });
   }
 
-  if (phase) {
+  if (filterPhases && filterPhases.length > 0) {
     andConditions.push({
-      importedOrganization: {
-        payload: {
-          path: ['Phase'],
-          string_contains: phase,
-        },
-      },
+      OR: filterPhases.map((p: string) => ({
+        OR: [
+          { importedOrganization: { payload: { path: ['Phase'], string_contains: p } } },
+          { importedOrganization: { payload: { path: ['phase'], string_contains: p } } },
+          { payload: { path: ['Phase'], string_contains: p } },
+          { payload: { path: ['phase'], string_contains: p } }
+        ]
+      }))
     });
   }
 
-  if (region) {
+  if (filterRegions && filterRegions.length > 0) {
     andConditions.push({
-      importedOrganization: {
-        region: {
-          contains: region,
-          mode: 'insensitive',
-        },
-      },
+      OR: filterRegions.map((r: string) => ({
+        importedOrganization: {
+          region: { contains: r, mode: 'insensitive' },
+        }
+      }))
     });
   }
 
-  if (town) {
+  if (filterCountries && filterCountries.length > 0) {
     andConditions.push({
-      importedOrganization: {
-        payload: {
-          path: ['Town'],
-          string_contains: town,
-        },
-      },
+      OR: filterCountries.map((c: string) => ({
+        importedOrganization: {
+          country: { contains: c, mode: 'insensitive' },
+        }
+      }))
+    });
+  }
+
+  if (filterTowns && filterTowns.length > 0) {
+    andConditions.push({
+      OR: filterTowns.map((t: string) => ({
+        OR: [
+          { importedOrganization: { payload: { path: ['Town'], string_contains: t } } },
+          { importedOrganization: { payload: { path: ['town'], string_contains: t } } },
+          { payload: { path: ['Town'], string_contains: t } },
+          { payload: { path: ['town'], string_contains: t } }
+        ]
+      }))
+    });
+  }
+
+  if (filterJobs && filterJobs.length > 0) {
+    andConditions.push({
+      OR: filterJobs.map((j: string) => ({
+        OR: [
+          { payload: { path: ['JobTitle'], string_contains: j } },
+          { payload: { path: ['jobTitle'], string_contains: j } },
+          { payload: { path: ['Job Title'], string_contains: j } },
+          { payload: { path: ['job title'], string_contains: j } }
+        ]
+      }))
     });
   }
 
@@ -203,44 +247,62 @@ const getAllImports = async (userId: string, query: any) => {
     });
   }
 
-  if (localAuthority) {
+  if (filterAuthorities && filterAuthorities.length > 0) {
     manualAndConditions.push({
-      organization: {
-        localAuthority: { contains: localAuthority, mode: 'insensitive' }
-      }
+      OR: filterAuthorities.map((auth: string) => ({
+        organization: { localAuthority: { contains: auth, mode: 'insensitive' } }
+      }))
     });
   }
 
-  if (gender) {
+  if (filterGenders && filterGenders.length > 0) {
     manualAndConditions.push({
-      OR: [
-        { gender: { contains: gender, mode: 'insensitive' } },
-        { organization: { gender: { contains: gender, mode: 'insensitive' } } }
-      ]
+      OR: filterGenders.map((g: string) => ({
+        OR: [
+          { gender: { contains: g, mode: 'insensitive' } },
+          { organization: { gender: { contains: g, mode: 'insensitive' } } }
+        ]
+      }))
     });
   }
 
-  if (phase) {
+  if (filterPhases && filterPhases.length > 0) {
     manualAndConditions.push({
-      organization: {
-        phase: { contains: phase, mode: 'insensitive' }
-      }
+      OR: filterPhases.map((p: string) => ({
+        organization: { phase: { contains: p, mode: 'insensitive' } }
+      }))
     });
   }
 
-  if (region) {
+  if (filterRegions && filterRegions.length > 0) {
     manualAndConditions.push({
-      organization: {
-        town: { contains: region, mode: 'insensitive' }
-      }
+      OR: filterRegions.map((r: string) => ({
+        organization: { town: { contains: r, mode: 'insensitive' } }
+      }))
     });
   }
 
-  if (town) {
+  if (filterCountries && filterCountries.length > 0) {
     manualAndConditions.push({
-      organization: {
-        town: { contains: town, mode: 'insensitive' }
-      }
+      OR: filterCountries.map((c: string) => ({
+        organization: { country: { contains: c, mode: 'insensitive' } }
+      }))
+    });
+  }
+
+  if (filterTowns && filterTowns.length > 0) {
+    manualAndConditions.push({
+      OR: filterTowns.map((t: string) => ({
+        organization: { town: { contains: t, mode: 'insensitive' } }
+      }))
+    });
+  }
+
+  if (filterJobs && filterJobs.length > 0) {
+    manualAndConditions.push({
+      OR: filterJobs.map((j: string) => ({
+        jobTitle: { contains: j, mode: 'insensitive' }
+      }))
     });
   }
 
@@ -314,6 +376,9 @@ const getAllImports = async (userId: string, query: any) => {
         } : {}),
         latitude: org?.latitude || (item.organization?.latitude ? parseFloat(item.organization.latitude) : null),
         longitude: org?.longitude || (item.organization?.longitude ? parseFloat(item.organization.longitude) : null),
+        region: org?.region || item.organization?.town,
+        district: org?.district || item.organization?.localAuthority,
+        country: org?.country || item.organization?.country,
       } : null,
       isManual: false,
       createdAt: item.createdAt
@@ -394,6 +459,9 @@ const getImportById = async (id: string, userId: string) => {
         } : {}),
         latitude: result.importedOrganization?.latitude || (result.organization?.latitude ? parseFloat(result.organization.latitude) : null),
         longitude: result.importedOrganization?.longitude || (result.organization?.longitude ? parseFloat(result.organization.longitude) : null),
+        region: result.importedOrganization?.region || result.organization?.town,
+        district: result.importedOrganization?.district || result.organization?.localAuthority,
+        country: result.importedOrganization?.country || result.organization?.country,
       } : null,
       isManual: false,
       Gender: result.gender,
@@ -610,6 +678,7 @@ const getFilters = async (userId: string) => {
       importedOrganization: { 
         select: { 
           region: true, 
+          country: true,
           payload: true 
         } 
       } 
@@ -626,7 +695,8 @@ const getFilters = async (userId: string) => {
           localAuthority: true,
           phase: true,
           town: true,
-          gender: true
+          gender: true,
+          country: true
         } 
       } 
     }
@@ -638,6 +708,7 @@ const getFilters = async (userId: string) => {
   const genders = new Set<string>();
   const authorities = new Set<string>();
   const towns = new Set<string>();
+  const countries = new Set<string>();
 
   importedContacts.forEach(c => {
     const p = c.payload as any;
@@ -659,6 +730,9 @@ const getFilters = async (userId: string) => {
 
     const town = orgP?.Town || orgP?.town;
     if (town) towns.add(town);
+
+    const country = c.importedOrganization?.country || orgP?.Country || orgP?.country;
+    if (country) countries.add(country);
   });
 
   manualContacts.forEach(c => {
@@ -678,6 +752,9 @@ const getFilters = async (userId: string) => {
 
     const town = c.organization?.town;
     if (town) towns.add(town);
+
+    const country = c.organization?.country;
+    if (country) countries.add(country);
   });
 
   return {
@@ -686,7 +763,8 @@ const getFilters = async (userId: string) => {
     regions: Array.from(regions).sort(),
     genders: Array.from(genders).sort(),
     authorities: Array.from(authorities).sort(),
-    towns: Array.from(towns).sort()
+    towns: Array.from(towns).sort(),
+    countries: Array.from(countries).sort()
   };
 };
 
