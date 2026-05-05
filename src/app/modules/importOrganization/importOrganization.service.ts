@@ -247,8 +247,13 @@ const getAllImports = async (userId: string, query: any) => {
   const result = await prisma.importedOrganization.findMany({
     where,
     include: {
+      contacts: true,
+      manualContacts: true,
       _count: {
-        select: { contacts: true }
+        select: { 
+          contacts: true,
+          manualContacts: true
+        }
       }
     },
     orderBy: { createdAt: 'desc' },
@@ -261,8 +266,13 @@ const getAllImports = async (userId: string, query: any) => {
       name: { contains: searchTerm, mode: 'insensitive' }
     } : {},
     include: {
+      contacts: true,
+      importedContacts: true,
       _count: {
-        select: { contacts: true }
+        select: { 
+          contacts: true,
+          importedContacts: true
+        }
       }
     }
   });
@@ -285,7 +295,26 @@ const getAllImports = async (userId: string, query: any) => {
     region: org.town, 
     district: org.localAuthority,
     country: org.country,
-    contactCount: org._count?.contacts || 0,
+    contactCount: (org._count?.contacts || 0) + ((org as any)._count?.importedContacts || 0),
+    matchedContacts: [
+      ...org.contacts.map(c => ({
+        id: c.id,
+        fullName: c.fullName,
+        email: c.email,
+        phone: c.phone,
+        jobTitle: c.jobTitle,
+        department: c.department,
+        gender: c.gender,
+        isManual: true,
+        createdAt: c.createdAt
+      })),
+      ...(org as any).importedContacts.map((c: any) => ({
+        id: c.id,
+        ...(c.payload as object),
+        isManual: false,
+        createdAt: c.createdAt
+      }))
+    ],
     isManual: true,
     createdAt: org.createdAt
   }));
@@ -299,7 +328,25 @@ const getAllImports = async (userId: string, query: any) => {
     region: item.region,
     district: item.district,
     country: item.country,
-    contactCount: (item as any)._count?.contacts || 0,
+    contactCount: ((item as any)._count?.contacts || 0) + ((item as any)._count?.manualContacts || 0),
+    matchedContacts: [
+      ...item.contacts.map(c => ({
+        id: c.id,
+        ...(c.payload as object),
+        isManual: false,
+        createdAt: c.createdAt
+      })),
+      ...item.manualContacts.map(c => ({
+        id: c.id,
+        FullName: c.fullName,
+        WorkEmail: c.email,
+        WorkPhone: c.phone,
+        JobTitle: c.jobTitle,
+        Department: c.department,
+        isManual: true,
+        createdAt: c.createdAt
+      }))
+    ],
     isManual: false,
     createdAt: item.createdAt
   }));
