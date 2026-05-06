@@ -133,10 +133,18 @@ const getAllImports = async (userId: string, query: any) => {
 
   if (searchTerm) {
     andConditions.push({
-      organizationName: {
-        contains: searchTerm,
-        mode: 'insensitive',
-      },
+      OR: [
+        { organizationName: { contains: searchTerm, mode: 'insensitive' } },
+        { payload: { path: ['ContactPersonName'], string_contains: searchTerm } },
+        { payload: { path: ['contactPersonName'], string_contains: searchTerm } },
+        { payload: { path: ['Contact Person Name'], string_contains: searchTerm } },
+        { payload: { path: ['FullName'], string_contains: searchTerm } },
+        { payload: { path: ['fullName'], string_contains: searchTerm } },
+        { payload: { path: ['Full Name'], string_contains: searchTerm } },
+        { payload: { path: ['JobTitle'], string_contains: searchTerm } },
+        { payload: { path: ['jobTitle'], string_contains: searchTerm } },
+        { payload: { path: ['Job Title'], string_contains: searchTerm } },
+      ]
     });
   }
 
@@ -243,7 +251,15 @@ const getAllImports = async (userId: string, query: any) => {
 
   if (searchTerm) {
     manualAndConditions.push({
-      fullName: { contains: searchTerm, mode: 'insensitive' }
+      OR: [
+        { fullName: { contains: searchTerm, mode: 'insensitive' } },
+        { organization: { name: { contains: searchTerm, mode: 'insensitive' } } },
+        { jobTitle: { contains: searchTerm, mode: 'insensitive' } },
+        { email: { contains: searchTerm, mode: 'insensitive' } },
+        { payload: { path: ['ContactPersonName'], string_contains: searchTerm } },
+        { payload: { path: ['contactPersonName'], string_contains: searchTerm } },
+        { payload: { path: ['Contact Person Name'], string_contains: searchTerm } },
+      ]
     });
   }
 
