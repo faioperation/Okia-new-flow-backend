@@ -42,40 +42,40 @@ const processExcelFiles = async (files: Express.Multer.File[], userId: string) =
         try {
           const jsonData = await parseExcelFile(file.path) as any[];
 
-            let successCount = 0;
-            if (Array.isArray(jsonData)) {
-              for (const item of jsonData) {
-                try {
-                  const orgName = item.OrganizationName || null;
-                  const localAuth = item.LocalAuthority || null;
+          let successCount = 0;
+          if (Array.isArray(jsonData)) {
+            for (const item of jsonData) {
+              try {
+                const orgName = item.OrganizationName || null;
+                const localAuth = item.LocalAuthority || null;
 
-                  const key = `${normalizeName(orgName)}|${(localAuth || '').toLowerCase().trim()}`;
-                  const orgId = orgLookup.get(key) || null;
+                const key = `${normalizeName(orgName)}|${(localAuth || '').toLowerCase().trim()}`;
+                const orgId = orgLookup.get(key) || null;
 
-                  const gender = item.Gender || item.gender;
-                  
-                  await prisma.importContact.create({
-                    data: {
-                      userId,
-                      payload: item as any,
-                      organizationName: normalizeName(orgName),
-                      localAuthority: (localAuth || '').trim(),
-                      gender: gender ? String(gender) : null,
-                      importedOrganizationId: orgId
-                    }
-                  });
-                  successCount++;
-                } catch (err: any) {
-                  console.error(`[Import] Failed to save contact: ${item.FullName || 'Unknown'}`, err.message);
-                }
+                const gender = item.Gender || item.gender;
+
+                await prisma.importContact.create({
+                  data: {
+                    userId,
+                    payload: item as any,
+                    organizationName: normalizeName(orgName),
+                    localAuthority: (localAuth || '').trim(),
+                    gender: gender ? String(gender) : null,
+                    importedOrganizationId: orgId
+                  }
+                });
+                successCount++;
+              } catch (err: any) {
+                console.error(`[Import] Failed to save contact: ${item.FullName || 'Unknown'}`, err.message);
               }
             }
+          }
 
-            await fs.unlink(file.path);
-            return {
-              fileName: file.originalname,
-              rowCount: successCount,
-            };
+          await fs.unlink(file.path);
+          return {
+            fileName: file.originalname,
+            rowCount: successCount,
+          };
         } catch (error: any) {
           try {
             await fs.unlink(file.path);
@@ -131,20 +131,21 @@ const getAllImports = async (userId: string, query: any) => {
 
   const andConditions: any[] = [];
 
+  let matchedImportContactIds: string[] | undefined = undefined;
   if (searchTerm) {
+    const importRaw: any[] = await prisma.$queryRaw`
+      SELECT id FROM "import_contacts"
+      WHERE "userId" = ${userId}
+      AND (
+        "organization_name" ILIKE ${'%' + searchTerm + '%'} OR
+        "local_authority" ILIKE ${'%' + searchTerm + '%'} OR
+        "payload"::text ILIKE ${'%' + searchTerm + '%'}
+      )
+    `;
+    matchedImportContactIds = importRaw.map(r => r.id);
+
     andConditions.push({
-      OR: [
-        { organizationName: { contains: searchTerm, mode: 'insensitive' } },
-        { payload: { path: ['ContactPersonName'], string_contains: searchTerm } },
-        { payload: { path: ['contactPersonName'], string_contains: searchTerm } },
-        { payload: { path: ['Contact Person Name'], string_contains: searchTerm } },
-        { payload: { path: ['FullName'], string_contains: searchTerm } },
-        { payload: { path: ['fullName'], string_contains: searchTerm } },
-        { payload: { path: ['Full Name'], string_contains: searchTerm } },
-        { payload: { path: ['JobTitle'], string_contains: searchTerm } },
-        { payload: { path: ['jobTitle'], string_contains: searchTerm } },
-        { payload: { path: ['Job Title'], string_contains: searchTerm } },
-      ]
+      id: { in: matchedImportContactIds }
     });
   }
 
@@ -249,17 +250,25 @@ const getAllImports = async (userId: string, query: any) => {
   const manualWhere: any = { userId };
   const manualAndConditions: any[] = [];
 
+  let matchedContactIds: string[] | undefined = undefined;
   if (searchTerm) {
+    const contactRaw: any[] = await prisma.$queryRaw`
+      SELECT c.id FROM "contacts" c
+      LEFT JOIN "organizations" o ON c.organization_id = o.id
+      WHERE c."user_id" = ${userId}
+      AND (
+        c."full_name" ILIKE ${'%' + searchTerm + '%'} OR
+        o."name" ILIKE ${'%' + searchTerm + '%'} OR
+        o."local_authority" ILIKE ${'%' + searchTerm + '%'} OR
+        c."job_title" ILIKE ${'%' + searchTerm + '%'} OR
+        c."email" ILIKE ${'%' + searchTerm + '%'} OR
+        c."payload"::text ILIKE ${'%' + searchTerm + '%'}
+      )
+    `;
+    matchedContactIds = contactRaw.map(r => r.id);
+
     manualAndConditions.push({
-      OR: [
-        { fullName: { contains: searchTerm, mode: 'insensitive' } },
-        { organization: { name: { contains: searchTerm, mode: 'insensitive' } } },
-        { jobTitle: { contains: searchTerm, mode: 'insensitive' } },
-        { email: { contains: searchTerm, mode: 'insensitive' } },
-        { payload: { path: ['ContactPersonName'], string_contains: searchTerm } },
-        { payload: { path: ['contactPersonName'], string_contains: searchTerm } },
-        { payload: { path: ['Contact Person Name'], string_contains: searchTerm } },
-      ]
+      id: { in: matchedContactIds }
     });
   }
 
@@ -427,7 +436,7 @@ const getAllImports = async (userId: string, query: any) => {
   }
 
   // Combine and sort
-  const combined = [...mappedManual, ...mappedImported].sort((a, b) => 
+  const combined = [...mappedManual, ...mappedImported].sort((a, b) =>
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
@@ -462,16 +471,16 @@ const getImportById = async (id: string, userId: string) => {
       importedOrganization: (result.importedOrganization || result.organization) ? {
         ...(result.importedOrganization?.payload as object || {}),
         ...(result.organization ? {
-           OrganizationName: result.organization.name,
-           LocalAuthority: result.organization.localAuthority,
-           Postcode: result.organization.postcode,
-           URN: result.organization.urn,
-           Town: result.organization.town,
-           Phase: result.organization.phase,
-           Gender: result.organization.gender,
-           Street: result.organization.street,
-           AddressLine1: result.organization.address,
-           TelephoneNumber: result.organization.phone,
+          OrganizationName: result.organization.name,
+          LocalAuthority: result.organization.localAuthority,
+          Postcode: result.organization.postcode,
+          URN: result.organization.urn,
+          Town: result.organization.town,
+          Phase: result.organization.phase,
+          Gender: result.organization.gender,
+          Street: result.organization.street,
+          AddressLine1: result.organization.address,
+          TelephoneNumber: result.organization.phone,
         } : {}),
         latitude: result.importedOrganization?.latitude || (result.organization?.latitude ? parseFloat(result.organization.latitude) : null),
         longitude: result.importedOrganization?.longitude || (result.organization?.longitude ? parseFloat(result.organization.longitude) : null),
@@ -672,8 +681,8 @@ const updateImport = async (id: string, userId: string, data: any) => {
     ...(jobTitle && { jobTitle }),
     ...(department && { department }),
     ...(manualGender && { gender: manualGender }),
-    ...(organizationId && (isManualOrg 
-      ? { organizationId, importedOrganizationId: null } 
+    ...(organizationId && (isManualOrg
+      ? { organizationId, importedOrganizationId: null }
       : { organizationId: null, importedOrganizationId: organizationId })),
   };
 
@@ -688,33 +697,33 @@ const updateImport = async (id: string, userId: string, data: any) => {
 const getFilters = async (userId: string) => {
   const importedContacts = await prisma.importContact.findMany({
     where: { userId },
-    select: { 
-      payload: true, 
-      localAuthority: true, 
-      importedOrganization: { 
-        select: { 
-          region: true, 
+    select: {
+      payload: true,
+      localAuthority: true,
+      importedOrganization: {
+        select: {
+          region: true,
           country: true,
-          payload: true 
-        } 
-      } 
+          payload: true
+        }
+      }
     }
   });
 
   const manualContacts = await prisma.contact.findMany({
     where: { userId },
-    select: { 
-      jobTitle: true, 
-      gender: true, 
-      organization: { 
-        select: { 
+    select: {
+      jobTitle: true,
+      gender: true,
+      organization: {
+        select: {
           localAuthority: true,
           phase: true,
           town: true,
           gender: true,
           country: true
-        } 
-      } 
+        }
+      }
     }
   });
 
@@ -731,16 +740,16 @@ const getFilters = async (userId: string) => {
     const orgP = c.importedOrganization?.payload as any;
 
     if (p?.JobTitle) jobs.add(p.JobTitle);
-    
+
     const phase = p?.Phase || orgP?.Phase;
     if (phase) phases.add(phase);
-    
+
     const gender = p?.Gender || orgP?.Gender;
     if (gender) genders.add(gender);
-    
+
     const authority = c.localAuthority || p?.LocalAuthority || orgP?.LocalAuthority;
     if (authority) authorities.add(authority);
-    
+
     const region = c.importedOrganization?.region || orgP?.region;
     if (region) regions.add(region);
 
@@ -753,7 +762,7 @@ const getFilters = async (userId: string) => {
 
   manualContacts.forEach(c => {
     if (c.jobTitle) jobs.add(c.jobTitle);
-    
+
     const gender = c.gender || c.organization?.gender;
     if (gender) genders.add(gender);
 
