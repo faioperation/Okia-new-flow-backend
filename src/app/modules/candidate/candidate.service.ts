@@ -77,9 +77,25 @@ const getSingleCandidate = async (id: string) => {
 };
 
 const updateCandidate = async (id: string, payload: any) => {
-  // Geocode address if updated
-  if (payload.address) {
-    const coords = await getCoordinates(payload.address);
+  // Geocode address if updated OR if lat/long are missing and address is available
+  let addressToGeocode = payload.address;
+
+  if (!addressToGeocode) {
+    const existingCandidate = await prisma.candidate.findUnique({
+      where: { id },
+      select: { address: true, latitude: true, longitude: true },
+    });
+
+    if (
+      existingCandidate?.address &&
+      (!existingCandidate.latitude || !existingCandidate.longitude)
+    ) {
+      addressToGeocode = existingCandidate.address;
+    }
+  }
+
+  if (addressToGeocode) {
+    const coords = await getCoordinates(addressToGeocode);
     if (coords) {
       payload.latitude = coords.lat;
       payload.longitude = coords.lng;

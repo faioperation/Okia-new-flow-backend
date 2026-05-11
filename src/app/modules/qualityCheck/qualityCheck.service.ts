@@ -4,6 +4,7 @@ import ApiError from "../../errors/ApiError";
 import httpStatus from "http-status";
 import { QueryBuilder } from "../../utils/QuaryBuilder";
 import { AvailabilityStatus } from "@prisma/client";
+import { getCoordinates } from "../../utils/geocoder";
 
 const processAiResponse = async (aiResponse: any) => {
   if (aiResponse.status !== 'success' || !Array.isArray(aiResponse.data)) {
@@ -281,6 +282,31 @@ const updateQualityCheck = async (id: string, payload: any) => {
       updatedCheck = await tx.qualityCheck.findUnique({ where: { id } });
       if (!updatedCheck) {
         throw new ApiError(httpStatus.NOT_FOUND, "Quality check not found");
+      }
+    }
+
+    // Geocode candidate address if updated OR if lat/long are missing and address is available
+    let addressToGeocode = candidateUpdateData.address;
+
+    if (!addressToGeocode) {
+      const existingCandidate = await tx.candidate.findUnique({
+        where: { id: updatedCheck.candidateId },
+        select: { address: true, latitude: true, longitude: true },
+      });
+
+      if (
+        existingCandidate?.address &&
+        (!existingCandidate.latitude || !existingCandidate.longitude)
+      ) {
+        addressToGeocode = existingCandidate.address;
+      }
+    }
+
+    if (addressToGeocode) {
+      const coords = await getCoordinates(addressToGeocode);
+      if (coords) {
+        candidateUpdateData.latitude = coords.lat;
+        candidateUpdateData.longitude = coords.lng;
       }
     }
 
