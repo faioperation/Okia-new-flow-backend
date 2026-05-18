@@ -9,23 +9,47 @@ import requestLogger from "./app/middlewares/requestLogger";
 const app: Application = express();
 
 // 1. MANUAL CORS FALLBACK (Absolute Priority)
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  res.header("Access-Control-Allow-Origin", origin || "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, ngrok-skip-browser-warning, Accept, X-Requested-With");
-  res.header("Access-Control-Allow-Credentials", "true");
+// 1. CORS CONFIGURATION – unified handling
+// Explicitly allow the known frontend origin while supporting credentials.
+const allowedOrigins = [
+  "https://edukai-frontend-orcin.vercel.app",
+  "https://edukaicvsub.edukai.co.uk",
+  // add other trusted origins here
+];
 
+app.use((req, res, next) => {
+  const origin = req.headers.origin as string | undefined;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  } else {
+    // fallback to generic allow‑origin for non‑credentialed requests
+    res.header("Access-Control-Allow-Origin", "*");
+  }
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, ngrok-skip-browser-warning, Accept, X-Requested-With"
+  );
+  // Only send credentials header when we are echoing a trusted origin
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
   if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
+    return res.sendStatus(204);
   }
   next();
 });
 
-// 2. STANDARD CORS MIDDLEWARE
+// 2. STANDARD CORS MIDDLEWARE – keep for any additional routes
 app.use(
   cors({
-    origin: true,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"), false);
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: [
@@ -35,6 +59,7 @@ app.use(
       "Accept",
       "X-Requested-With",
     ],
+    optionsSuccessStatus: 204,
   })
 );
 
